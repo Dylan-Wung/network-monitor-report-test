@@ -450,7 +450,7 @@
                 /* Dark Mode Toggle Switch */
                 .top-controls {
                     display: flex;
-                    justify-content: space-between; /* 左右對齊 */
+                    justify-content: space-between;
                     align-items: center;
                     margin-bottom: 20px;
                     flex-wrap: wrap; /* 允許換行 */
@@ -567,17 +567,13 @@
                     }
 
                     .top-controls {
-                        flex-direction: column; /* 改為垂直排列 */
-                        align-items: flex-start; /* 左對齊 */
+                        flex-direction: column;
+                        align-items: flex-end; /* 右對齊，讓開關和按鈕在右側 */
                         gap: 10px;
                     }
                     .control-buttons {
-                        justify-content: flex-start; /* 按鈕左對齊 */
+                        justify-content: flex-end; /* 按鈕右對齊 */
                         width: 100%;
-                    }
-                    .theme-switch-wrapper {
-                        width: 100%; /* 佔滿一行 */
-                        justify-content: flex-start; /* 開關靠左 */
                     }
 
                     details.location-details > summary {
@@ -630,6 +626,9 @@
                     .progress-bar {
                         font-size: 0.75em;
                     }
+                    .theme-switch-wrapper {
+                        margin-bottom: 0; /* 在小螢幕下，外層 flex 容器已控制間距 */
+                    }
                     .theme-switch {
                         height: 22px;
                         width: 44px;
@@ -673,29 +672,32 @@
                     }
                 }
 
-                function toggleAllSections(action, onlyAnomaly = false) {
-                    const allDetails = document.querySelectorAll('details');
+                function toggleAllAnomalySections(action) {
+                    const allDetails = document.querySelectorAll('details[data-category-status]');
                     allDetails.forEach(detail => {
-                        // 檢查是否是地點層級的 details 標籤，它們有 .location-details class
-                        const isLocationDetail = detail.classList.contains('location-details');
-                        // 檢查是否有異常（針對類別和地點）
-                        const hasFailure = detail.classList.contains('has-fail') || detail.querySelector('summary.summary-has-fail');
-
-                        if (onlyAnomaly) {
-                            // 只處理有異常的 sections
-                            if (hasFailure) {
-                                if (action === 'expand') {
-                                    detail.setAttribute('open', '');
-                                } else if (action === 'collapse') {
-                                    detail.removeAttribute('open');
-                                }
-                            }
-                        } else {
-                            // 處理所有 sections
+                        // 如果是異常的類別 (data-category-status='FAIL')
+                        if (detail.getAttribute('data-category-status').includes('FAIL')) { // 修正為包含 'FAIL'，因為可能不是單純的 'FAIL'
                             if (action === 'expand') {
                                 detail.setAttribute('open', '');
                             } else if (action === 'collapse') {
                                 detail.removeAttribute('open');
+                            }
+                        }
+                    });
+
+                    const allLocationDetails = document.querySelectorAll('details.location-details');
+                    allLocationDetails.forEach(locDetail => {
+                        // 檢查該地點下是否有任何異常的 category details 仍然是 open
+                        const hasOpenAnomalyCategory = locDetail.querySelector('details[data-category-status*="FAIL"][open]'); // 修正為包含 'FAIL'
+                        if (!hasOpenAnomalyCategory && locDetail.classList.contains('has-fail')) {
+                            // 如果地點有異常，但所有異常子類別都收合了，則收合地點本身
+                             if (action === 'collapse') {
+                                locDetail.removeAttribute('open');
+                             }
+                        } else if (locDetail.classList.contains('has-fail')) {
+                            // 如果地點有異常，且有異常子類別展開，則展開地點
+                            if (action === 'expand') {
+                                locDetail.setAttribute('open', '');
                             }
                         }
                     });
@@ -739,8 +741,8 @@
 </label>
 </div>
 <div class='control-buttons'>
-<button onclick="toggleAllSections('expand', true)">展開/收合所有異常</button>
-<button onclick="toggleAllSections('collapse', false)">全部展開/收合</button>
+<button onclick="toggleAllAnomalySections('expand')">展開所有異常</button>
+<button onclick="toggleAllAnomalySections('collapse')">收合所有異常</button>
 </div>
 </div>
 <h2>🌐 網路設備狀態報告</h2><p class='update-info'>每5分鐘更新一次</p>
@@ -774,7 +776,7 @@
 <div class='resource-item detailed'>
 <span class='resource-label'>CPU 使用率:</span>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 17.6%;'><span>17.6%</span></div>
+<div class='progress-bar ok' style='width: 66.0%;'><span>66.0%</span></div>
 </div>
 <div class='resource-value'>
 <span class='ok'>(OK)</span>
@@ -783,12 +785,12 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>CPU:</span>
-<span class='summary-value ok'>17.6% (OK)</span>
+<span class='summary-value ok'>66.0% (OK)</span>
 </div>
 <div class='resource-item detailed'>
 <span class='resource-label'>記憶體使用率:</span>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 19.8%;'><span>19.8%</span></div>
+<div class='progress-bar ok' style='width: 20.9%;'><span>20.9%</span></div>
 </div>
 <div class='resource-value'>
 <span class='ok'>(OK)</span>
@@ -797,7 +799,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>記憶體:</span>
-<span class='summary-value ok'>19.8% (OK)</span>
+<span class='summary-value ok'>20.9% (OK)</span>
 </div>
 <div class='resource-item detailed'>
 <span class='resource-label'>磁碟使用率 (/):</span>
@@ -824,4 +826,4 @@
 <span class='summary-value'>0.06</span>
 </div>
 </div>
-<p>🕒 更新時間：2025-07-29 23:55:17</p></div></body></html>
+<p>🕒 更新時間：2025-07-29 23:55:19</p></div></body></html>
