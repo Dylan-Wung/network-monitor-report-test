@@ -122,7 +122,7 @@
                 }
                 .stat-item {
                     flex: 1;
-                    min-width: 140px; /* 調整最小寬度 */
+                    min-width: 150px; /* 調整最小寬度，確保內容舒適顯示 */
                     background-color: var(--bg-color);
                     padding: 15px 20px;
                     border-radius: 10px;
@@ -144,7 +144,7 @@
                     margin-bottom: 5px;
                 }
                 .stat-value {
-                    font-size: 2em; /* 增大數字 */
+                    font-size: 2.2em; /* 增大數字 */
                     font-weight: 700;
                     line-height: 1;
                 }
@@ -177,6 +177,7 @@
                     align-items: center;
                     gap: 12px; /* 增大圖示與文字間距 */
                     transition: background-color 0.3s, color 0.3s;
+                    min-height: 44px; /* 確保觸摸目標大小 */
                 }
                 details.location-details > summary svg {
                     min-width: 22px; /* 調整圖示大小 */
@@ -222,6 +223,7 @@
                     gap: 10px; /* 增大圖示與文字間距 */
                     font-weight: 500;
                     transition: background-color 0.3s, color 0.3s;
+                    min-height: 44px; /* 確保觸摸目標大小 */
                 }
                 summary svg {
                     min-width: 18px;
@@ -275,6 +277,11 @@
                 details.location-details.has-fail > summary svg {
                     stroke: white; /* 異常時圖示變白 */
                 }
+                /* 在黑暗模式下強化異常邊框 */
+                body.dark-mode summary.summary-has-fail {
+                    border: 1px solid var(--fail-color);
+                }
+
 
                 details ul {
                     list-style: none;
@@ -294,6 +301,11 @@
                     text-overflow: ellipsis;
                     font-size: 0.95em;
                     text-align: left; /* 確保文字左對齊 */
+                    cursor: pointer; /* 點擊行時應有指標提示 */
+                }
+                details li:active, details li:hover {
+                    background-color: var(--border-color-light); /* 點擊時或懸停時的背景顏色 */
+                    transition: background-color 0.2s;
                 }
                 details li .device-name {
                     font-weight: 600;
@@ -366,9 +378,9 @@
                     font-size: 1em;
                 }
                 .system-status .threshold-info {
-                    font-size: 0.8em;
+                    font-size: 0.75em; /* 稍微縮小字體 */
                     color: var(--text-color);
-                    opacity: 0.7;
+                    opacity: 0.6; /* 稍微降低透明度 */
                     margin-left: 10px;
                     white-space: nowrap;
                 }
@@ -520,8 +532,11 @@
                 /* Control Buttons */
                 .control-buttons {
                     display: flex;
-                    gap: 10px;
+                    justify-content: space-between; /* 左右對齊 */
+                    align-items: center;
+                    margin-bottom: 20px;
                     flex-wrap: wrap; /* 允許按鈕組內換行 */
+                    gap: 15px; /* 元素間距 */
                 }
                 .control-buttons button {
                     background-color: var(--button-bg); /* Default collapsed state */
@@ -919,7 +934,7 @@
 </div>
 <div class='stat-item'>
 <span class='stat-label fail'>異常設備</span>
-<div classt='stat-value fail'>6</div>
+<div class='stat-value fail'>6</div>
 </div>
 </div>
 </div>
@@ -936,7 +951,7 @@
 <div class='resource-item detailed'>
 <span class='resource-label'>CPU 使用率:</span>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 4.1%;'><span>4.1%</span></div>
+<div class='progress-bar ok' style='width: 6.1%;'><span>6.1%</span></div>
 </div>
 <div class='resource-value'>
 <span class='ok'>(OK)</span>
@@ -945,12 +960,12 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>CPU:</span>
-<span class='summary-value ok'>4.1% (OK)</span>
+<span class='summary-value ok'>6.1% (OK)</span>
 </div>
 <div class='resource-item detailed'>
 <span class='resource-label'>記憶體使用率:</span>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 20.2%;'><span>20.2%</span></div>
+<div class='progress-bar ok' style='width: 20.7%;'><span>20.7%</span></div>
 </div>
 <div class='resource-value'>
 <span class='ok'>(OK)</span>
@@ -959,7 +974,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>記憶體:</span>
-<span class='summary-value ok'>20.2% (OK)</span>
+<span class='summary-value ok'>20.7% (OK)</span>
 </div>
 <div class='resource-item detailed'>
 <span class='resource-label'>磁碟使用率 (/):</span>
@@ -978,12 +993,12 @@
 <div class='resource-item detailed'>
 <span class='resource-label'>平均負載 (5分鐘):</span>
 <div class='resource-value'>
-<span>0.25</span>
+<span>0.49</span>
 </div>
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>負載:</span>
-<span class='summary-value'>0.25</span>
+<span class='summary-value'>0.49</span>
 </div>
 </div>
-<p>🕒 更新時間：2025-07-07 02:53:07</p></div></body></html>
+<p>🕒 更新時間：2025-07-07 02:54:01</p></div></body></html>
