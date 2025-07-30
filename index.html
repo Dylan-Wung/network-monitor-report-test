@@ -8,10 +8,11 @@
                     /* Light theme (default) */
                     --bg-color: #f8f9fa; /* 更柔和的背景 */
                     --text-color: #343a40; /* 深灰文字 */
-                    --card-bg: #ffffff;
+                    --card-bg: #ffffff; /* 主卡片背景 */
+                    --location-summary-bg-light: #f2f2f2; /* 地點 summary 淺色背景 */
+                    --category-summary-bg-light: #e6e6e6; /* 類別 summary 更淺色背景 */
                     --border-color: #e9ecef; /* 淺邊框 */
                     --border-color-light: #f1f3f5; /* 更淺的邊框 */
-                    --summary-bg-light: #f8f9fa; /* 摘要背景 */
                     --summary-bg-dark: #6c757d; /* 系統狀態頭部背景 */
                     --fail-bg-light: #fdeaea; /* 異常淺背景 */
                     --fail-bg-dark: #dc3545; /* 異常深背景 */
@@ -34,10 +35,11 @@
                 body.dark-mode {
                     --bg-color: #212529; /* 深色背景 */
                     --text-color: #e9ecef; /* 淺灰文字 */
-                    --card-bg: #343a40;
+                    --card-bg: #343a40; /* 主卡片背景 */
+                    --location-summary-bg-dark: #2a2e32; /* 地點 summary 深色背景 */
+                    --category-summary-bg-dark: #1f2226; /* 類別 summary 更深色背景 */
                     --border-color: #495057;
                     --border-color-light: #5a6268;
-                    --summary-bg-light: #495057;
                     --summary-bg-dark: #212529; /* 系統狀態頭部背景 */
                     --fail-bg-light: #4a3c3c; /* 異常淺背景 (深色模式) */
                     --fail-bg-dark: #dc3545; /* 異常深背景 (保持紅色) */
@@ -161,32 +163,47 @@
                     margin: 15px 0;
                     border: 1px solid var(--border-color);
                     border-radius: 10px;
-                    background: var(--card-bg);
+                    background: var(--card-bg); /* 地點區塊內部的背景色，與整體卡片背景一致 */
                     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
                     transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
                 }
-                details > summary {
+                
+                /* 地點 summary 的背景色深淺切換 */
+                details.location-details > summary {
+                    background: var(--location-summary-bg-light); /* 淺色模式下地點 summary 的背景 */
+                    color: var(--text-color);
+                    font-size: 1.15rem;
+                    padding: 15px 20px;
+                    border-radius: 6px; /* 這裡應為 top-left/right-radius，但因為外層 details 已經有圓角，且 summary 佔滿寬度，視覺上會與外層圓角保持一致 */
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: background-color 0.3s, color 0.3s;
+                    min-height: 44px;
+                }
+                body.dark-mode details.location-details > summary {
+                    background: var(--location-summary-bg-dark); /* 深色模式下地點 summary 的背景 */
+                }
+
+                /* 類別 summary 的背景色深淺切換 */
+                details:not(.location-details) > summary {
+                    background: var(--category-summary-bg-light); /* 淺色模式下類別 summary 的背景 */
                     color: var(--text-color);
                     font-size: 1rem;
-                    padding: 12px 15px; /* 調整內邊距 */
+                    padding: 12px 15px;
                     border-radius: 6px;
                     font-weight: 500;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
-                    gap: 10px; /* 增大圖示與文字間距 */
+                    gap: 10px;
                     transition: background-color 0.3s, color 0.3s;
-                    min-height: 44px; /* 確保觸摸目標大小 */
+                    min-height: 44px;
                 }
-                details.location-details > summary {
-                    background: white; /* Default for light mode */
-                    font-size: 1.15rem;
-                    padding: 15px 20px;
-                    gap: 12px;
-                    font-weight: 600;
-                }
-                body.dark-mode details.location-details > summary {
-                    background: black; /* Dark mode specific background for location details */
+                body.dark-mode details:not(.location-details) > summary {
+                    background: var(--category-summary-bg-dark); /* 深色模式下類別 summary 的背景 */
                 }
 
                 /* 異常設備 地點的文字顏色 */
@@ -300,20 +317,13 @@
                     border: none; /* 移除紅色邊框 */
                     box-shadow: none;
                 }
-                details.location-details.has-fail > summary svg { /* 注意：此處已改用 data-location-status 標記狀態 */
-                    stroke: var(--fail-color); /* 異常時圖示顏色與文字一致 */
-                }
-                /* 在黑暗模式下強化異常邊框 */
-                body.dark-mode summary.summary-has-fail {
-                    border: 2px solid var(--fail-color); /* 確保黑暗模式下也是粗邊框 */
-                    color: var(--fail-color); /* 確保黑暗模式下文字也是紅色 */
-                }
 
-
+                /* 設備列表項目背景色 (恢復前一版效果) */
                 details ul {
                     list-style: none;
                     padding: 0;
                     margin: 0;
+                    background: var(--card-bg); /* 設備列表的背景色與卡片背景一致 */
                     border-top: 1px solid var(--border-color-light); /* 更淺的分割線 */
                     padding-top: 10px;
                 }
@@ -1080,8 +1090,8 @@
 </label>
 </div>
 <div class='control-buttons'>
-<button id='toggleAnomalyBtn' onclick="toggleAnomalySections()">展開/收合所有異常</button>
-<button id='toggleAllBtn' onclick="toggleAllSections()">全部展開/收合</button>
+<button id='toggleAnomalyBtn' onclick="toggleAnomalySections()">展開所有異常</button>
+<button id='toggleAllBtn' onclick="toggleAllSections()">全部展開</button>
 </div>
 </div>
 <h2>🌐 網路設備狀態報告</h2><p class='update-info'>每5分鐘更新一次</p>
@@ -1118,10 +1128,10 @@
 <div class='resource-item detailed'>
 <div class='resource-label-row'>
 <span class='resource-label'>記憶體使用率:</span>
-<span class='resource-value-text ok'>20.9% (OK)</span>
+<span class='resource-value-text ok'>21.1% (OK)</span>
 </div>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 20.9%;'><span>20.9%</span></div>
+<div class='progress-bar ok' style='width: 21.1%;'><span>21.1%</span></div>
 </div>
 <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
 </div>
@@ -1147,7 +1157,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>記憶體:</span>
-<span class='summary-value ok'>20.9% (OK)</span>
+<span class='summary-value ok'>21.1% (OK)</span>
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>磁碟:</span>
@@ -1167,4 +1177,4 @@
 <details class='location-details' data-location-status='ok' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> <span class='location-title-text'>地點：27-1F</span></summary><details data-category-status='OK' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 2)</span><span class='category-title-status ok'>✅ OK: 2　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(新舜房間)</span> <span class='device-ip'>(10.10.101.17)</span> <span class='device-detail'>https:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(餐廳)</span> <span class='device-ip'>(10.10.101.16)</span> <span class='device-detail'>https:200</span></span></li></ul></details></details>
 <details class='location-details' data-location-status='ok' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> <span class='location-title-text'>地點：27-2F</span></summary><details data-category-status='OK' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-2F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.6)</span> <span class='device-detail'>http:200</span></span></li></ul></details></details>
 <details class='location-details' data-location-status='ok' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> <span class='location-title-text'>地點：27-4F</span></summary><details data-category-status='OK' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-4F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.4)</span> <span class='device-detail'>http:200</span></span></li></ul></details><details data-category-status='OK' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 27-4F</span> <span class='device-ip'>(10.10.101.31)</span> <span class='device-detail'>http:401</span></span></li></ul></details></details>
-<p>🕒 更新時間：2025-07-30 23:40:15</p></div></body></html>
+<p>🕒 更新時間：2025-07-30 23:49:59</p></div></body></html>
