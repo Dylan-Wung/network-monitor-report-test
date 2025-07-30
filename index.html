@@ -28,6 +28,12 @@
                     --button-bg: #007bff; /* Base blue for collapsed state */
                     --button-hover-bg: #0056b3; /* Darker blue on hover */
                     --button-expanded-bg: #0056b3; /* Darker blue for expanded state */
+
+                    /* 新增：區塊背景色層級 */
+                    --block-level-0-bg: #ffffff; /* 最外層容器，例如 .container */
+                    --block-level-1-bg: #f5f5f5; /* 地點區塊背景色 (較淺) */
+                    --block-level-2-bg: #ececec; /* 類別區塊背景色 (中等淺色) */
+                    --block-level-3-bg: #fdfdfd; /* 設備列表項目背景色 (最淺) */
                 }
 
                 /* Dark theme */
@@ -54,6 +60,12 @@
                     --button-bg: #0056b3; /* Darker blue for dark mode base (collapsed) */
                     --button-hover-bg: #007bff; /* Lighter blue on hover in dark mode */
                     --button-expanded-bg: #007bff; /* Lighter blue for expanded state in dark mode */
+
+                    /* 新增：深色模式下的區塊背景色層級 */
+                    --block-level-0-bg: #343a40;
+                    --block-level-1-bg: #3a4046; /* 地點區塊背景色 (較淺) */
+                    --block-level-2-bg: #40464c; /* 類別區塊背景色 (中等淺色) */
+                    --block-level-3-bg: #464c52; /* 設備列表項目背景色 (最淺) */
                 }
 
                 body {
@@ -69,7 +81,7 @@
                     max-width: 900px;
                     margin: 20px auto;
                     padding: 25px;
-                    background: var(--card-bg);
+                    background: var(--block-level-0-bg); /* 最外層容器背景色 */
                     border-radius: 12px;
                     box-shadow: 0 6px 20px rgba(0,0,0,0.08); /* 更柔和的陰影 */
                     transition: background-color 0.3s, box-shadow 0.3s;
@@ -94,7 +106,7 @@
                 .ok { color: var(--ok-color); }
                 .warn { color: var(--warn-color); }
                 .fail { color: var(--fail-color); }
-                
+
                 /* 頂部概覽儀表板 */
                 .overview-dashboard {
                     background: var(--card-bg);
@@ -161,7 +173,7 @@
                     margin: 15px 0;
                     border: 1px solid var(--border-color); /* 添加邊框 */
                     border-radius: 10px;
-                    background: var(--card-bg); /* 添加背景色 */
+                    background: var(--block-level-1-bg); /* 使用地點區塊背景色 */
                     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
                     transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
                 }
@@ -174,7 +186,7 @@
                 }
 
                 details > summary {
-                    background: var(--summary-bg-light); /* 摘要背景顏色 */
+                    background: var(--block-level-2-bg); /* 類別摘要背景顏色 */
                     color: var(--text-color);
                     font-size: 1rem;
                     padding: 12px 15px; /* 調整內邊距 */
@@ -192,6 +204,15 @@
                     padding: 15px 20px;
                     gap: 12px;
                     font-weight: 600;
+                }
+
+                /* 確保 category 的 summary 在地點 details 內部有正確的圓角 */
+                details.location-details > details:not([open]) > summary {
+                    border-radius: 6px; /* 如果收合，確保有圓角 */
+                }
+                details.location-details > details[open] > summary {
+                    border-bottom-left-radius: 0; /* 展開時下方無圓角 */
+                    border-bottom-right-radius: 0;
                 }
 
                 /* 隱藏預設箭頭 */
@@ -302,6 +323,9 @@
                     margin: 0;
                     border-top: 1px solid var(--border-color-light); /* 更淺的分割線 */
                     padding-top: 10px;
+                    background: var(--block-level-3-bg); /* 設備列表的背景色 */
+                    border-bottom-left-radius: 10px; /* 列表最下方圓角 */
+                    border-bottom-right-radius: 10px;
                 }
                 details li {
                     padding: 10px 15px; /* 調整內邊距 */
@@ -314,9 +338,11 @@
                     font-size: 0.95em;
                     text-align: left; /* 確保文字左對齊 */
                     cursor: pointer; /* 點擊行時應有指標提示 */
+                    background: var(--block-level-3-bg); /* 確保列表項目也使用此背景色 */
+                    transition: background-color 0.2s;
                 }
                 details li:active, details li:hover {
-                    background-color: var(--border-color-light); /* 點擊時或懸停時的背景顏色 */
+                    background-color: var(--border-color); /* 點擊時或懸停時的背景顏色 */
                     transition: background-color 0.2s;
                 }
                 details li .device-info-wrapper { /* 新增包裝器 */
@@ -658,7 +684,7 @@
                     .container { margin: 10px auto; padding: 15px; }
                     h2 { font-size: 1.5em; }
                     .update-info { font-size: 0.7em; margin-bottom: 15px; }
-                    
+
                     .overview-dashboard {
                         padding: 15px;
                         margin-bottom: 20px;
@@ -701,16 +727,16 @@
 
 
                     /* 手機版 summary 調整 */
-                    details > summary { 
-                        font-size: 0.9rem; 
-                        padding: 10px 12px; 
-                        gap: 6px; 
+                    details > summary {
+                        font-size: 0.9rem;
+                        padding: 10px 12px;
+                        gap: 6px;
                         flex-direction: row; /* 保持箭頭、圖示、主標題在一行 */
                         align-items: center; /* 垂直居中對齊 */
                     }
                     /* 在手機版下，類別標題的 wrapper 垂直排列 */
                     .summary-title-category-wrapper {
-                        flex-direction: column; 
+                        flex-direction: column;
                         align-items: flex-start;
                         flex-grow: 1; /* 佔滿剩餘空間 */
                         min-width: 0;
@@ -729,7 +755,7 @@
                         min-height: 16px;
                     }
                     details li { font-size: 0.85em; padding: 8px 12px; gap: 5px; }
-                    
+
                     /* 手機版：設備詳細資訊預設隱藏 */
                     details li .device-detail {
                         display: none; /* 預設隱藏 */
@@ -878,7 +904,7 @@
                 // 新增：切換所有異常區塊的展開/收合狀態
                 function toggleAnomalySections() {
                     const anomalyDetails = document.querySelectorAll('details.location-details.has-fail, details[data-category-status="has-fail"]');
-                    
+
                     let anyAnomalyOpen = false;
 
                     // 檢查是否有任何異常區塊目前是展開的
@@ -946,7 +972,7 @@
                     deviceListItems.forEach(item => {
                         item.addEventListener('click', function(event) {
                             // 阻止事件冒泡到父級 details 標籤，避免其收合
-                            event.stopPropagation(); 
+                            event.stopPropagation();
                             // 僅在手機版面下啟用此功能
                             if (window.innerWidth <= 600) {
                                 this.classList.toggle('show-detail');
@@ -1033,9 +1059,9 @@
 <div class='top-controls'>
 <div class='theme-switch-wrapper'>
 <span class='theme-switch-label'>
-              <svg class='theme-switch-icon sun' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/></svg>
-              <svg class='theme-switch-icon moon' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'></path></svg>
-            </span>
+                  <svg class='theme-switch-icon sun' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/></svg>
+                  <svg class='theme-switch-icon moon' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'></path></svg>
+                </span>
 <label class='theme-switch' for='themeToggle'>
 <input type='checkbox' id='themeToggle' onclick='toggleDarkMode()'>
 <div class='slider'></div>
@@ -1080,10 +1106,10 @@
 <div class='resource-item detailed'>
 <div class='resource-label-row'>
 <span class='resource-label'>記憶體使用率:</span>
-<span class='resource-value-text ok'>20.7% (OK)</span>
+<span class='resource-value-text ok'>21.3% (OK)</span>
 </div>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 20.7%;'><span>20.7%</span></div>
+<div class='progress-bar ok' style='width: 21.3%;'><span>21.3%</span></div>
 </div>
 <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
 </div>
@@ -1100,7 +1126,7 @@
 <div class='resource-item detailed'>
 <div class='resource-label-row'>
 <span class='resource-label'>平均負載 (5分鐘):</span>
-<span class='resource-value-text'>0.20</span>
+<span class='resource-value-text'>0.11</span>
 </div>
 </div>
 <div class='resource-item summary'>
@@ -1109,7 +1135,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>記憶體:</span>
-<span class='summary-value ok'>20.7% (OK)</span>
+<span class='summary-value ok'>21.3% (OK)</span>
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>磁碟:</span>
@@ -1117,7 +1143,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>負載:</span>
-<span class='summary-value'>0.20</span>
+<span class='summary-value'>0.11</span>
 </div>
 </div>
 </details>
@@ -1129,4 +1155,4 @@
 <details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-1F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 2)</span><span class='category-title-status ok'>✅ OK: 2　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(新舜房間)</span> <span class='device-ip'>(10.10.101.17)</span> <span class='device-detail'>https:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(餐廳)</span> <span class='device-ip'>(10.10.101.16)</span> <span class='device-detail'>https:200</span></span></li></ul></details></details>
 <details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-2F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-2F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.6)</span> <span class='device-detail'>http:200</span></span></li></ul></details></details>
 <details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-4F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-4F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.4)</span> <span class='device-detail'>http:200</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 27-4F</span> <span class='device-ip'>(10.10.101.31)</span> <span class='device-detail'>http:401</span></span></li></ul></details></details>
-<p>🕒 更新時間：2025-07-31 00:07:15</p></div></body></html>
+<p>🕒 更新時間：2025-07-31 00:21:28</p></div></body></html>
