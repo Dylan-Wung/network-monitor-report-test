@@ -190,13 +190,14 @@
                 }
                 /* 使用 ::before 插入 Emoji 圖示 */
                 details.location-details > summary::before {
-                    content: '▶'; /* 預設為向右箭頭 (收合) */
+                    content: '\25B6'; /* 預設為向右三角形 (收合) */
                     font-size: 1.2em;
                     margin-right: 8px;
                     transition: transform 0.2s ease-in-out;
+                    line-height: 1; /* 確保垂直對齊 */
                 }
                 details.location-details[open] > summary::before {
-                    content: '▼'; /* 展開時為向下箭頭 */
+                    content: '\25BC'; /* 展開時為向下三角形 */
                     transform: rotate(0deg); /* 確保不旋轉 */
                 }
 
@@ -236,13 +237,14 @@
                 }
                 /* 使用 ::before 插入 Emoji 圖示 */
                 summary::before {
-                    content: '▶'; /* 預設為向右箭頭 (收合) */
+                    content: '\25B6'; /* 預設為向右三角形 (收合) */
                     font-size: 1.1em;
                     margin-right: 6px;
                     transition: transform 0.2s ease-in-out;
+                    line-height: 1; /* 確保垂直對齊 */
                 }
                 details[open] > summary::before {
-                    content: '▼'; /* 展開時為向下箭頭 */
+                    content: '\25BC'; /* 展開時為向下三角形 */
                     transform: rotate(0deg); /* 確保不旋轉 */
                 }
 
@@ -334,7 +336,7 @@
 
                 /* 系統資源區塊 */
                 .system-status {
-                    margin-top: 20px; /* 調整頂部間距 */
+                    margin-top: 30px; /* 調整頂部間距 */
                     padding: 0;
                     border: 1px solid var(--border-color);
                     border-radius: 10px;
@@ -350,19 +352,19 @@
                     color: white;
                     text-align: center;
                     margin-bottom: 0; /* 移除底部間距 */
-                    padding: 10px 15px; /* 調整標題內邊距 */
+                    padding: 15px; /* 恢復原始內邊距 */
                     background: var(--summary-bg-dark);
                     border-top-left-radius: 9px; /* 配合父元素圓角 */
                     border-top-right-radius: 9px;
                     transition: background-color 0.3s;
-                    font-size: 1.2em; /* 調整標題字體大小 */
+                    font-size: 1.3em; /* 恢復原始字體大小 */
                     font-weight: 600;
                 }
                 .system-status .resource-item {
                     display: flex;
                     flex-direction: column;
                     margin-bottom: 0;
-                    padding: 10px 15px; /* 調整項目內邊距 */
+                    padding: 15px 20px; /* 恢復原始內邊距 */
                     border-bottom: 1px solid var(--border-color-light);
                 }
                 .system-status .resource-item:last-of-type {
@@ -370,19 +372,19 @@
                 }
                 .system-status .resource-label {
                     font-weight: 600;
-                    margin-bottom: 5px; /* 調整標籤底部間距 */
+                    margin-bottom: 8px; /* 恢復原始底部間距 */
                     color: var(--text-color);
-                    font-size: 0.95em; /* 調整標籤字體大小 */
+                    font-size: 1em; /* 恢復原始字體大小 */
                 }
                 .system-status .resource-value {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
-                    font-size: 0.95em; /* 調整數值字體大小 */
+                    font-size: 1em; /* 恢復原始字體大小 */
                 }
                 .system-status .threshold-info {
-                    font-size: 0.7em; /* 稍微縮小字體 */
+                    font-size: 0.75em; /* 恢復原始字體大小 */
                     color: var(--text-color);
                     opacity: 0.6; /* 稍微降低透明度 */
                     margin-left: 10px;
@@ -393,8 +395,8 @@
                     background-color: var(--progress-bg);
                     border-radius: 6px; /* 圓角 */
                     overflow: hidden;
-                    height: 24px; /* 調整高度 */
-                    margin-top: 5px; /* 調整頂部間距 */
+                    height: 28px; /* 恢復原始高度 */
+                    margin-top: 8px; /* 恢復原始頂部間距 */
                     position: relative;
                     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
                 }
@@ -408,7 +410,7 @@
                     align-items: center;
                     justify-content: center; /* 讓數字居中 */
                     color: white;
-                    font-size: 0.8em; /* 調整進度條數字字體大小 */
+                    font-size: 0.9em; /* 恢復原始字體大小 */
                     font-weight: bold;
                     position: absolute;
                     top: 0;
@@ -435,7 +437,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 0.8em; /* 調整覆蓋文字字體大小 */
+                    font-size: 0.9em; /* 恢復原始字體大小 */
                     font-weight: bold;
                     color: var(--progress-text-color);
                     z-index: 0;
@@ -453,8 +455,8 @@
                     flex-direction: row;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 8px 15px; /* 調整精簡模式內邊距 */
-                    font-size: 0.9em; /* 調整精簡模式字體大小 */
+                    padding: 10px 20px; /* 恢復原始內邊距 */
+                    font-size: 0.9em; /* 恢復原始字體大小 */
                 }
                 .system-status .resource-item.summary .summary-label {
                     font-weight: 600;
@@ -510,10 +512,6 @@
                     position: absolute;
                     width: 22px; /* 調整圓點大小 */
                     transition: .4s;
-                }
-                input:checked + .slider {
-                    background-color: #007bff; /* 藍色，更現代的亮色 */
-                    border-color: #007bff;
                 }
                 input:checked + .slider:before {
                     transform: translateX(28px); /* 配合增大大小 */
@@ -882,8 +880,8 @@
                         toggleAnomalyBtn.textContent = '收合所有異常';
                         toggleAnomalyBtn.dataset.state = 'collapsed';
                     } else {
-                        toggleAnomalyBtn.textContent = '展開所有異常';
-                        toggleAnomalyBtn.dataset.state = 'expanded';
+                        button.textContent = '展開所有異常';
+                        button.dataset.state = 'expanded';
                     }
 
                     // 判斷「全部展開/收合」按鈕的初始狀態
@@ -956,7 +954,7 @@
 <div class='resource-item detailed'>
 <span class='resource-label'>CPU 使用率:</span>
 <div class='progress-container'>
-<div class='progress-bar ok' style='width: 2.1%;'><span>2.1%</span></div>
+<div class='progress-bar ok' style='width: 4.1%;'><span>4.1%</span></div>
 </div>
 <div class='resource-value'>
 <span class='ok'>(OK)</span>
@@ -965,7 +963,7 @@
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>CPU:</span>
-<span class='summary-value ok'>2.1% (OK)</span>
+<span class='summary-value ok'>4.1% (OK)</span>
 </div>
 <div class='resource-item detailed'>
 <span class='resource-label'>記憶體使用率:</span>
@@ -998,12 +996,12 @@
 <div class='resource-item detailed'>
 <span class='resource-label'>平均負載 (5分鐘):</span>
 <div class='resource-value'>
-<span>0.17</span>
+<span>0.09</span>
 </div>
 </div>
 <div class='resource-item summary'>
 <span class='summary-label'>負載:</span>
-<span class='summary-value'>0.17</span>
+<span class='summary-value'>0.09</span>
 </div>
 </div>
-<p>🕒 更新時間：2025-07-30 19:31:54</p></div></body></html>
+<p>🕒 更新時間：2025-07-30 19:52:08</p></div></body></html>
