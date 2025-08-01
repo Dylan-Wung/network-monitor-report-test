@@ -97,23 +97,18 @@
             font-size: 2em;
             font-weight: 700;
         }
-        .subtitle-info {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0 0.8em;
+        .version-info {
             text-align: center;
             font-size: 0.9em;
             color: var(--text-color);
-            margin: 10px auto 35px;
-            opacity: 0.8;
+            margin: 0 auto 5px;
+            opacity: 0.7;
         }
-        .info-item:not(:last-child)::after {
-            content: '·';
-            margin-left: 0.8em;
-            font-weight: bold;
+        .timestamp-info {
+            text-align: center;
+            font-size: 0.9em;
             color: var(--text-color);
+            margin: 0 auto 35px;
             opacity: 0.8;
         }
         .ok { color: var(--ok-color); }
@@ -457,16 +452,6 @@
         body.errors-filtered .location-details.has-fail details:not([data-category-status='has-fail']) { display: none; }
         body.errors-filtered .location-details.has-fail details[data-category-status='has-fail'] li:not(.fail) { display: none; }
 
-        @media (max-width: 768px) {
-            .subtitle-info {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .info-item:not(:last-child)::after {
-                content: none;
-            }
-        }
-
         @media (max-width: 600px) {
             body { padding: 10px; }
             .container { margin: 15px auto; padding: 20px 15px; }
@@ -510,11 +495,8 @@
         </div>
         
         <h2>🌐 網路設備狀態報告</h2>
-        <p class='subtitle-info'>
-            <span class="info-item">版本號：v2.9.7</span>
-            <span class="info-item">🕒 更新時間：2025-08-01 16:48:24</span>
-            <span class="info-item">每5分鐘更新一次</span>
-        </p>
+        <p class='version-info'>版本號：v2.9.8</p>
+        <p class='timestamp-info'>🕒 更新時間：2025-08-01 16:57:41 &nbsp;&nbsp; 每5分鐘更新一次</p>
 
         <div class='overview-dashboard'>
             <h3>設備狀態總覽</h3>
@@ -545,13 +527,13 @@
             <summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7V4"/><path d="M12 18v3"/><path d="M15 9l2.7 2.7"/><path d="M6.3 17.7L9 15"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="M17.7 6.3L15 9"/><path d="M9 15l-2.7 2.7"/></svg> <div class='summary-title-wrapper'><span class='summary-title-main'>系統資源使用率</span><span class='summary-title-sub'>(Orange Pi One)</span></div><button id='systemModeToggle' onclick='toggleSystemDetailsMode()'>顯示精簡</button></summary>
             <div class='system-status-content'>
                 <div class='resource-item detailed' data-resource="cpu">
-                    <div class='resource-label-row'><span class='resource-label'>CPU 使用率:</span><span class='resource-value-text ok'>6.1% (OK)</span></div>
-                    <div class='progress-container'><div class='progress-bar ok' style='width: 6.1%;'><span>6.1%</span></div></div>
+                    <div class='resource-label-row'><span class='resource-label'>CPU 使用率:</span><span class='resource-value-text ok'>6.0% (OK)</span></div>
+                    <div class='progress-container'><div class='progress-bar ok' style='width: 6.0%;'><span>6.0%</span></div></div>
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="mem">
-                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.2% (OK)</span></div>
-                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.2%;'><span>20.2%</span></div></div>
+                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.0% (OK)</span></div>
+                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.0%;'><span>20.0%</span></div></div>
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="disk">
@@ -560,7 +542,7 @@
                     <span class='threshold-info'>(閾值: 警告 > 80%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="load">
-                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.01</span></div>
+                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.10</span></div>
                     <div class='progress-container'></div>
                 </div>
             </div>
