@@ -1,964 +1,1004 @@
-<html>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>網路設備狀態報告</title>
-    <link rel='preconnect' href='https://fonts.googleapis.com'>
-    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
-    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap' rel='stylesheet'>
-    <style>
-        :root {
-            /* Light theme (default) - 北歐極簡風格色彩 */
-            --bg-color: hsl(0, 0%, 98%);
-            --text-color: #333333;
-            --card-bg: hsl(0, 0%, 99%);
-            --border-color: hsl(0, 0%, 82%);
-            --border-color-light: hsl(0, 0%, 92%);
-            --summary-bg-light: hsl(0, 0%, 94%);
-            --summary-bg-dark: hsl(210, 8%, 40%);
-            --fail-bg-light: hsl(0, 100%, 98%);
-            --fail-bg-dark: hsl(0, 70%, 40%);
-            --fail-text-color: hsl(0, 70%, 40%);
-            --ok-color: hsl(140, 70%, 35%); /* 鮮明的綠色 (白天) */
-            --warn-color: hsl(40, 90%, 50%);
-            --fail-color: hsl(0, 80%, 45%); /* 鮮明的紅色 (白天) */
-            --progress-bg: hsl(0, 0%, 90%);
-            --progress-text-color: #333;
-            --toggle-bg: hsl(210, 8%, 70%);
-            --toggle-circle: #ffffff;
-            --toggle-border: hsl(210, 8%, 75%);
-            --toggle-shadow: rgba(0,0,0,0.06);
-            --button-bg: transparent;
-            --button-hover-bg: hsl(210, 8%, 90%);
-            --button-expanded-bg: hsl(210, 8%, 90%);
-            --button-border: hsl(210, 8%, 70%);
-
-            /* 新增：北歐極簡區塊背景色層級 (由淺至深區分) */
-            --block-level-0-bg: hsl(0, 0%, 99%);
-            --block-level-1-bg: hsl(0, 0%, 96%);
-            --block-level-2-bg: hsl(0, 0%, 94%);
-            --block-level-3-bg: hsl(0, 0%, 99%);
-        }
-
-        /* Dark theme - 北歐極簡風格色彩 */
-        body.dark-mode {
-            --bg-color: hsl(210, 10%, 18%);
-            --text-color: hsl(200, 10%, 85%);
-            --card-bg: hsl(210, 8%, 20%);
-            --border-color: hsl(210, 8%, 35%);
-            --border-color-light: hsl(210, 8%, 45%);
-            --summary-bg-light: hsl(210, 10%, 25%);
-            --summary-bg-dark: hsl(210, 10%, 15%);
-            --fail-bg-light: hsl(0, 40%, 20%);
-            --fail-bg-dark: hsl(0, 70%, 30%);
-            --fail-text-color: hsl(0, 70%, 70%);
-            --ok-color: hsl(140, 60%, 55%); /* 鮮明的綠色 (黑暗) */
-            --warn-color: hsl(40, 80%, 70%);
-            --fail-color: hsl(0, 70%, 65%); /* 鮮明的紅色 (黑暗) */
-            --progress-bg: hsl(210, 8%, 30%);
-            --progress-text-color: hsl(200, 10%, 85%);
-            --toggle-bg: hsl(210, 8%, 45%);
-            --toggle-circle: #ffffff;
-            --toggle-border: hsl(210, 8%, 50%);
-            --toggle-shadow: rgba(0,0,0,0.5);
-            --button-bg: transparent;
-            --button-hover-bg: hsl(210, 8%, 30%);
-            --button-expanded-bg: hsl(210, 8%, 30%);
-            --button-border: hsl(210, 8%, 45%);
-
-            /* 新增：深色模式下的北歐極簡區塊背景色層級 (由深至淺區分) */
-            --block-level-0-bg: hsl(210, 8%, 20%);
-            --block-level-1-bg: hsl(210, 10%, 25%);
-            --block-level-2-bg: hsl(210, 12%, 30%);
-            --block-level-3-bg: hsl(210, 8%, 20%);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            margin: 0;
-            transition: background-color 0.3s, color 0.3s;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 35px;
-            background: var(--block-level-0-bg);
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        h2 {
-            text-align: center;
-            color: var(--text-color);
-            margin-bottom: 10px;
-            transition: color 0.3s;
-            font-size: 2em;
-            font-weight: 700;
-        }
-        .update-info {
-            text-align: center;
-            font-size: 0.9em;
-            color: var(--text-color);
-            margin-bottom: 35px;
-            opacity: 0.7;
-        }
-
-        /* 狀態顏色 */
-        .ok { color: var(--ok-color); }
-        .warn { color: var(--warn-color); }
-        .fail { color: var(--fail-color); }
-
-        /* 頂部概覽儀表板 */
-        .overview-dashboard {
-            background: var(--card-bg);
-            color: var(--text-color);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            text-align: center;
-            border: 1px solid var(--border-color-light);
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-        .overview-dashboard h3 {
-            margin-top: 0;
-            font-size: 1.6em;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-        .overview-stats {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 25px;
-        }
-        .stat-item {
-            flex: 1;
-            min-width: 160px;
-            background-color: var(--bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid var(--border-color-light);
-            transition: background-color 0.3s, border-color 0.3s;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.01);
-        }
-        .stat-label {
-            color: var(--text-color);
-            font-weight: 500;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        .stat-item .ok {
-            color: var(--ok-color);
-        }
-        .stat-item .fail {
-            color: var(--fail-color);
-        }
-
-        /* 地點層級的樣式 */
-        details.location-details {
-            margin: 25px 0;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            background: var(--block-level-1-bg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-        details.location-details.has-fail > summary {
-            color: var(--fail-color);
-        }
-        details.location-details.has-fail > summary svg {
-            stroke: var(--fail-color);
-        }
-
-        details > summary {
-            background: var(--block-level-2-bg);
-            color: var(--text-color);
-            font-size: 1rem;
-            padding: 14px 18px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: background-color 0.3s, color 0.3s;
-            min-height: 48px;
-        }
-        details.location-details > summary {
-            font-size: 1.2em;
-            padding: 18px 25px;
-            gap: 15px;
-            font-weight: 600;
-        }
-
-        details.location-details > details > summary {
-            border: 1px solid var(--border-color-light);
-        }
-        details.location-details > details:not([open]) > summary {
-            border-radius: 8px;
-            margin: 15px 20px 0 20px;
-        }
-        details.location-details > details[open] > summary {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            margin: 15px 20px 0 20px;
-        }
-
-        details > summary::marker,
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        .arrow-icon {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-            display: none;
-            stroke: currentColor;
-            transition: transform 0.2s ease-out;
-        }
-        details > summary .arrow-icon {
-            margin-right: 8px;
-        }
-        details.location-details > summary .arrow-icon {
-            width: 22px;
-            height: 22px;
-            margin-right: 10px;
-        }
-
-        details[open] > summary .expanded-arrow { display: inline-block; }
-        details[open] > summary .collapsed-arrow { display: none; }
-        details:not([open]) > summary .collapsed-arrow { display: inline-block; }
-        details:not([open]) > summary .expanded-arrow { display: none; }
-
-        summary svg:not(.arrow-icon) {
-            min-width: 20px;
-            min-height: 20px;
-        }
-        details.location-details > summary svg:not(.arrow-icon) {
-            min-width: 24px;
-            min-height: 24px;
-        }
-
-        .summary-title-category-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.3;
-            flex-grow: 1;
-            min-width: 0;
-        }
-        .summary-title-category-wrapper .category-title-main {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-        .summary-title-category-wrapper .category-title-status {
-            font-size: 0.85em;
-            opacity: 0.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-
-        /* 狀態指示燈 */
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            flex-shrink: 0;
-        }
-        .status-dot.ok { background-color: var(--ok-color); }
-        .status-dot.fail { background-color: var(--fail-color); }
-        .status-dot.warn { background-color: var(--warn-color); }
-
-        /* 異常狀態的樣式強化 - 只使用邊框 */
-        summary.summary-has-fail {
-            background: transparent;
-            border: 2px solid var(--fail-color);
-            color: var(--fail-color);
-            box-shadow: none;
-        }
-        body.dark-mode summary.summary-has-fail {
-            border: 2px solid var(--fail-color);
-            color: var(--fail-color);
-        }
-
-        details ul {
-            list-style: none;
-            padding: 0 20px 20px 20px;
-            margin: 0;
-            border-top: 1px solid var(--border-color-light);
-            padding-top: 15px;
-            background: var(--block-level-3-bg);
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-        details li {
-            padding: 15px 10px;
-            border-bottom: 1px solid var(--border-color-light);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 0.95em;
-            text-align: left;
-            cursor: pointer;
-            background: var(--block-level-3-bg);
-            transition: background-color 0.2s;
-        }
-        details li:active, details li:hover {
-            background-color: var(--border-color);
-            transition: background-color 0.2s;
-        }
-        details li .device-info-wrapper {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            min-width: 0;
-        }
-        details li .device-name {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.4em;
-        }
-        details li .device-ip {
-            opacity: 0.8;
-            font-size: 0.85em;
-            margin-left: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.4em;
-        }
-        details li .device-detail {
-            text-align: left;
-            padding-left: 0;
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            font-size: 0.85em;
-            opacity: 0.9;
-            margin-top: 5px;
-            line-height: 1.4em;
-        }
-        details li:last-child {
-            border-bottom: none;
-        }
-
-        /* 系統資源區塊 */
-        details.system-status-details {
-            margin-top: 40px;
-            padding: 0;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            background: var(--card-bg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-        details.system-status-details > summary {
-            background: var(--summary-bg-dark);
-            color: white;
-            font-weight: 600;
-            border-top-left-radius: 9px;
-            border-top-right-radius: 9px;
-            padding: 15px 20px;
-            gap: 12px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-start;
-            position: relative;
-            min-height: 44px;
-        }
-        details.system-status-details > summary .summary-title-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.2;
-            margin-left: 0;
-        }
-        details.system-status-details > summary .summary-title-main {
-            font-size: 1.15em;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-        details.system-status-details > summary .summary-title-sub {
-            font-size: 0.85em;
-            opacity: 0.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-        details.system-status-details > summary svg.arrow-icon {
-            position: static;
-            transform: none;
-            margin-left: 0;
-            margin-right: 8px;
-        }
-        details.system-status-details > summary svg:not(.arrow-icon) {
-            width: 22px;
-            height: 22px;
-            min-width: 22px;
-            min-height: 22px;
-            margin-right: 10px;
-        }
-        details.system-status-details > summary button {
-            position: absolute;
-            right: 20px;
-            background-color: transparent;
-            border: 1px solid white;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-        details.system-status-details > summary button:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        .system-status-content {
-            padding: 15px 20px;
-            background: var(--card-bg);
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-
-        /* 系統資源詳細模式的新佈局 */
-        .resource-item.detailed {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color-light);
-        }
-        .resource-item.detailed:last-of-type {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .resource-label-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-        .resource-label-row .resource-value-text {
-            font-weight: normal;
-            margin-left: 10px;
-            white-space: nowrap;
-        }
-        .progress-container {
-            width: 100%;
-            background-color: var(--progress-bg);
-            border-radius: 6px;
-            overflow: hidden;
-            height: 28px;
-            position: relative;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--ok-color);
-            border-radius: 6px;
-            transition: width 0.5s ease-in-out, background-color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9em;
-            font-weight: bold;
-            position: absolute;
-            top: 0;
-            left: 0;
-            box-sizing: border-box;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-shadow: 0 0 4px rgba(0,0,0,0.8);
-        }
-        .progress-bar.warn { background-color: var(--warn-color); }
-        .progress-bar.fail { background-color: var(--fail-color); }
-        .progress-container .progress-text-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9em;
-            font-weight: bold;
-            color: var(--progress-text-color);
-            z-index: 0;
-        }
-        .threshold-info {
-            font-size: 0.7em;
-            color: var(--text-color);
-            opacity: 0.6;
-            margin-left: 0;
-            margin-top: 6px;
-            text-align: left;
-            width: 100%;
-        }
-
-        /* 精簡模式 */
-        .system-status-content.compact-mode .resource-item.detailed {
-            display: none;
-        }
-        .system-status-content.compact-mode .resource-item.summary {
-            display: flex;
-        }
-        .system-status-content .resource-item.summary {
-            display: none;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            font-size: 0.9em;
-        }
-        .system-status-content .resource-item.summary .summary-label {
-            font-weight: 600;
-        }
-        .system-status-content .resource-item.summary .summary-value {
-            font-weight: 500;
-        }
-
-        /* Dark Mode Toggle Switch */
-        .top-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .theme-switch {
-            display: inline-block;
-            height: 30px;
-            position: relative;
-            width: 60px;
-        }
-        .theme-switch input { display: none; }
-        .slider {
-            background-color: var(--toggle-bg);
-            border-radius: 30px;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border: 1px solid var(--toggle-border);
-            box-shadow: inset 0 0 5px var(--toggle-shadow);
-        }
-        .slider:before {
-            background-color: var(--toggle-circle);
-            border-radius: 50%;
-            bottom: 3px;
-            content: '';
-            height: 24px;
-            left: 3px;
-            position: absolute;
-            width: 24px;
-            transition: .4s;
-        }
-        input:checked + .slider:before { transform: translateX(30px); }
-        .theme-switch-label {
-            font-size: 1em;
-            color: var(--text-color);
-        }
-        .theme-switch-icon {
-            width: 22px;
-            height: 22px;
-            vertical-align: middle;
-            fill: currentColor;
-            stroke: currentColor;
-        }
-        .theme-switch-icon.sun { display: inline-block; }
-        .theme-switch-icon.moon { display: none; }
-        body.dark-mode .theme-switch-icon.sun { display: none; }
-        body.dark-mode .theme-switch-icon.moon { display: inline-block; }
-
-        /* Control Buttons */
-        .control-buttons {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .control-buttons button {
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            font-weight: bold;
-            border: 1px solid var(--button-border);
-            border-radius: 6px;
-            padding: 10px 18px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            white-space: nowrap;
-            flex-shrink: 1;
-        }
-        .control-buttons button:hover {
-            background-color: var(--button-hover-bg);
-        }
-        .control-buttons button[data-state="expanded"] { background-color: var(--button-expanded-bg); }
-        .control-buttons button[data-state="collapsed"] { background-color: var(--button-bg); }
-
-        /* Mobile Optimization */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { margin: 15px auto; padding: 20px; }
-            h2 { font-size: 1.8em; }
-            .update-info { font-size: 0.8em; margin-bottom: 20px; }
-            .overview-dashboard { padding: 20px; margin-bottom: 25px; }
-            .overview-dashboard h3 { font-size: 1.4em; margin-bottom: 15px; }
-            .overview-stats { gap: 15px; }
-            .stat-item { min-width: 120px; padding: 15px 10px; font-size: 0.85em; }
-            .stat-value { font-size: 2em; }
-
-            .top-controls {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-                margin-bottom: 20px;
-            }
-            .control-buttons {
-                flex-direction: column;
-                width: 100%;
-                justify-content: flex-start;
-                gap: 10px;
-            }
-            .theme-switch-wrapper {
-                width: 100%;
-                justify-content: flex-start;
-            }
-            .control-buttons button {
-                width: 100%;
-                padding: 10px 15px;
-                font-size: 0.9em;
-            }
-            details > summary {
-                font-size: 0.95rem;
-                padding: 12px 15px;
-                gap: 8px;
-                flex-direction: row;
-                align-items: center;
-            }
-            details.location-details > details:not([open]) > summary { margin: 10px 15px 0 15px; }
-            details.location-details > details[open] > summary { margin: 10px 15px 0 15px; }
-            .summary-title-category-wrapper {
-                flex-direction: column;
-                align-items: flex-start;
-                flex-grow: 1;
-                min-width: 0;
-            }
-            .summary-title-category-wrapper .category-title-main,
-            .summary-title-category-wrapper .category-title-status {
-                white-space: normal;
-                text-overflow: clip;
-                overflow: visible;
-                width: auto;
-                max-width: 100%;
-            }
-            summary svg:not(.arrow-icon) { min-width: 18px; min-height: 18px; }
-            details li { font-size: 0.85em; padding: 10px 15px; gap: 8px; }
-            details li .device-detail { display: none; white-space: normal; overflow: visible; text-overflow: clip; }
-            details li.show-detail .device-detail { display: block; margin-top: 5px; padding-left: 0; font-size: 0.85em; }
-            details li {
-                flex-direction: row;
-                align-items: flex-start;
-                flex-wrap: nowrap;
-            }
-            details li .status-dot { margin-right: 8px; margin-top: 3px; flex-shrink: 0; }
-            details li .device-info-wrapper {
-                flex-direction: column;
-                align-items: flex-start;
-                flex-grow: 1;
-                min-width: 0;
-            }
-            details li .device-name, details li .device-ip { white-space: normal; text-align: left; width: 100%; }
-            details li .device-ip { margin-left: 0; font-size: 0.85em; }
-            details li .device-detail { margin-top: 5px; }
-
-            details.system-status-details > summary {
-                font-size: 1.1em;
-                padding: 12px;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-            details.system-status-details > summary .summary-title-wrapper {
-                flex-grow: 1;
-                margin-left: 0;
-            }
-            details.system-status-details > summary svg.arrow-icon { margin-left: 0; margin-right: 6px; }
-            details.system-status-details > summary svg:not(.arrow-icon) { min-width: 18px; min-height: 18px; margin-right: 8px; }
-            details.system-status-details > summary button {
-                font-size: 0.7em;
-                padding: 4px 8px;
-                position: static;
-            }
-            .system-status-content { padding: 10px 15px; }
-            .resource-item.detailed { padding: 10px 0; }
-            .resource-label-row {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-            .resource-label-row .resource-value-text { margin-left: 5px; }
-            .threshold-info { font-size: 0.7em; margin-top: 5px; }
-            .progress-container { height: 24px; }
-            .progress-bar { font-size: 0.75em; }
-            .theme-switch { height: 24px; width: 48px; }
-            .slider:before { height: 20px; width: 20px; bottom: 2px; left: 2px; }
-            input:checked + .slider:before { transform: translateX(24px); }
-            .theme-switch-icon { width: 18px; height: 18px; }
-        }
-    </style>
-    <script>
-        function forceReflow(element) { void element.offsetHeight; }
-        function toggleDarkMode() {
-            const body = document.body;
-            body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
-        }
-        function toggleSystemStatusMode() {
-            const systemStatusContentDiv = document.querySelector('.system-status-content');
-            const toggleButton = document.getElementById('systemModeToggle');
-            systemStatusContentDiv.classList.toggle('compact-mode');
-            if (systemStatusContentDiv.classList.contains('compact-mode')) {
-                localStorage.setItem('systemStatusMode', 'compact');
-                toggleButton.textContent = '切換至詳細模式';
-            } else {
-                localStorage.setItem('systemStatusMode', 'detailed');
-                toggleButton.textContent = '切換至精簡模式';
-            }
-            forceReflow(systemStatusContentDiv);
-        }
-        function toggleAnomalySections() {
-            const anomalyDetails = document.querySelectorAll('details.location-details.has-fail, details[data-category-status="has-fail"]');
-            let anyAnomalyOpen = false;
-            anomalyDetails.forEach(detail => { if (detail.hasAttribute('open')) { anyAnomalyOpen = true; } });
-            anomalyDetails.forEach(detail => {
-                if (anyAnomalyOpen) { detail.removeAttribute('open'); } else { detail.setAttribute('open', ''); }
-                forceReflow(detail);
-            });
-            const button = document.getElementById('toggleAnomalyBtn');
-            if (anyAnomalyOpen) { button.textContent = '展開所有異常'; button.dataset.state = 'collapsed'; }
-            else { button.textContent = '收合所有異常'; button.dataset.state = 'expanded'; }
-        }
-        function toggleAllSections() {
-            const allDetails = document.querySelectorAll('details');
-            let anyOpen = false;
-            allDetails.forEach(detail => { if (detail.hasAttribute('open')) { anyOpen = true; } });
-            allDetails.forEach(detail => {
-                if (anyOpen) { detail.removeAttribute('open'); } else { detail.setAttribute('open', ''); }
-                forceReflow(detail);
-            });
-            const button = document.getElementById('toggleAllBtn');
-            if (anyOpen) { button.textContent = '全部展開'; button.dataset.state = 'collapsed'; }
-            else { button.textContent = '全部收合'; button.dataset.state = 'expanded'; }
-        }
-        function setupDeviceDetailToggle() {
-            const deviceListItems = document.querySelectorAll('details li');
-            deviceListItems.forEach(item => {
-                item.addEventListener('click', function(event) {
-                    event.stopPropagation();
-                    if (window.innerWidth <= 600) {
-                        this.classList.toggle('show-detail');
-                        if (this.closest('details')) { forceReflow(this.closest('details')); }
-                    }
-                });
-            });
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeToggle').checked = true;
-            }
-            const savedSystemMode = localStorage.getItem('systemStatusMode');
-            const systemStatusContentDiv = document.querySelector('.system-status-content');
-            const toggleSystemModeBtn = document.getElementById('systemModeToggle');
-            if (systemStatusContentDiv && toggleSystemModeBtn) {
-                if (savedSystemMode === 'compact') {
-                    systemStatusContentDiv.classList.add('compact-mode');
-                    toggleSystemModeBtn.textContent = '切換至詳細模式';
-                } else {
-                    systemStatusContentDiv.classList.remove('compact-mode');
-                    toggleSystemModeBtn.textContent = '切換至精簡模式';
+<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>網路設備狀態報告</title>
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+<link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap' rel='stylesheet'>
+<style>
+                :root {
+                    /* Light theme (default) */
+                    --bg-color: #f8f9fa; /* 更柔和的背景 */
+                    --text-color: #343a40; /* 深灰文字 */
+                    --card-bg: #ffffff;
+                    --border-color: #e9ecef; /* 淺邊框 */
+                    --border-color-light: #f1f3f5; /* 更淺的邊框 */
+                    --summary-bg-light: #f8f9fa; /* 摘要背景 */
+                    --summary-bg-dark: #6c757d; /* 系統狀態頭部背景 */
+                    --fail-bg-light: #fdeaea; /* 異常淺背景 */
+                    --fail-bg-dark: #dc3545; /* 異常深背景 */
+                    --fail-text-color: #dc3545; /* 異常文字顏色 */
+                    --ok-color: #28a745; /* 綠色 */
+                    --warn-color: #ffc107; /* 黃色 */
+                    --fail-color: #dc3545; /* 紅色 */
+                    --progress-bg: #e0e0e0;
+                    --progress-text-color: #333;
+                    --toggle-bg: #adb5bd; /* 開關背景 */
+                    --toggle-circle: #ffffff; /* 開關圓點 */
+                    --toggle-border: #ced4da; /* 開關邊框 */
+                    --toggle-shadow: rgba(0,0,0,0.1);
+                    --button-bg: #007bff; /* Base blue for collapsed state */
+                    --button-hover-bg: #0056b3; /* Darker blue on hover */
+                    --button-expanded-bg: #0056b3; /* Darker blue for expanded state */
                 }
-            }
-            const toggleAnomalyBtn = document.getElementById('toggleAnomalyBtn');
-            if (toggleAnomalyBtn) {
-                const initialAnomalyDetails = document.querySelectorAll('details.location-details.has-fail, details[data-category-status="has-fail"]');
-                let initialAnyAnomalyOpen = false;
-                initialAnomalyDetails.forEach(detail => { if (detail.hasAttribute('open')) { initialAnyAnomalyOpen = true; } });
-                if (initialAnyAnomalyOpen) { toggleAnomalyBtn.textContent = '收合所有異常'; toggleAnomalyBtn.dataset.state = 'expanded'; }
-                else { toggleAnomalyBtn.textContent = '展開所有異常'; toggleAnomalyBtn.dataset.state = 'collapsed'; }
-            }
-            const toggleAllBtn = document.getElementById('toggleAllBtn');
-            if (toggleAllBtn) {
-                const allDetails = document.querySelectorAll('details');
-                let initialAnyAllOpen = false;
-                allDetails.forEach(detail => { if (detail.hasAttribute('open')) { initialAnyAllOpen = true; } });
-                if (initialAnyAllOpen) { toggleAllBtn.textContent = '全部展開'; toggleAllBtn.dataset.state = 'collapsed'; }
-                else { toggleAllBtn.textContent = '全部收合'; toggleAllBtn.dataset.state = 'expanded'; }
-            }
-            setupDeviceDetailToggle();
-        });
-    </script>
-</head>
-<body>
-    <div class='container'>
-        <div class='top-controls'>
-            <div class='theme-switch-wrapper'>
-                <span class='theme-switch-label'>
-                    <svg class='theme-switch-icon sun' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/></svg>
-                    <svg class='theme-switch-icon moon' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'></path></svg>
-                </span>
-                <label class='theme-switch' for='themeToggle'>
-                    <input type='checkbox' id='themeToggle' onclick='toggleDarkMode()'>
-                    <div class='slider'></div>
-                </label>
-            </div>
-            <div class='control-buttons'>
-                <button id='toggleAnomalyBtn' onclick="toggleAnomalySections()">展開所有異常</button>
-                <button id='toggleAllBtn' onclick="toggleAllSections()">全部展開</button>
-            </div>
-        </div>
-        <h2>🌐 網路設備狀態報告</h2>
-        <p class='update-info'>每5分鐘更新一次</p>
-        <div class='overview-dashboard'>
-            <h3>設備狀態總覽</h3>
-            <div class='overview-stats'>
-                <div class='stat-item'>
-                    <span class='stat-label'>總設備數</span>
-                    <div class='stat-value'>27</div>
-                </div>
-                <div class='stat-item'>
-                    <span class='stat-label ok'>正常設備</span>
-                    <div class='stat-value ok'>21</div>
-                </div>
-                <div class='stat-item'>
-                    <span class='stat-label fail'>異常設備</span>
-                    <div class='stat-value fail'>6</div>
-                </div>
-            </div>
-        </div>
-<details class='location-details has-fail' open><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：25-2F</summary><details data-category-status='has-fail' open><summary class='summary-has-fail summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 2)</span><span class='category-title-status fail'>✅ OK: 1　❌ FAIL: 1　⚠️ 有異常</span></div></summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>25-2F客廳-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.165)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>25-2F小孩房間-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.8)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details><details data-category-status='has-fail' open><summary class='summary-has-fail summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status fail'>✅ OK: 0　❌ FAIL: 1　⚠️ 有異常</span></div></summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 25-2F</span> <span class='device-ip'>(10.10.101.164)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li></ul></details></details>
-<details class='location-details has-fail' open><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：25-3F</summary><details data-category-status='has-fail' open><summary class='summary-has-fail summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 2)</span><span class='category-title-status fail'>✅ OK: 0　❌ FAIL: 2　⚠️ 有異常</span></div></summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>25-3F客廳-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.166)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>25-3F小孩房間-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.167)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 25-3F</span> <span class='device-ip'>(10.10.101.34)</span> <span class='device-detail' data-mobile-hidden='true'>http:401</span></span></li></ul></details></details>
-<details class='location-details has-fail' open><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：27-3F</summary><details data-category-status='has-fail' open><summary class='summary-has-fail summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 3)</span><span class='category-title-status fail'>✅ OK: 2　❌ FAIL: 1　⚠️ 有異常</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>UniFi-UDR</span> <span class='device-ip'>(10.10.100.4)</span> <span class='device-detail' data-mobile-hidden='true'>https:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(27號三樓主臥)</span> <span class='device-ip'>(10.10.101.15)</span> <span class='device-detail' data-mobile-hidden='true'>https:200</span></span></li><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(27號三樓客廳)</span> <span class='device-ip'>(10.10.101.170)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 3)</span><span class='category-title-status ok'>✅ OK: 3　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>HP 1810-8G 27-3F</span> <span class='device-ip'>(10.10.101.38)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 27-3F</span> <span class='device-ip'>(10.10.101.36)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG2008D-02 27-3F</span> <span class='device-ip'>(10.10.101.40)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details></details>
-<details class='location-details has-fail' open><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：電梯梯間(主線路)</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>ASUS AX88U</span> <span class='device-ip'>(10.10.101.2)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Firewall (總數: 3)</span><span class='category-title-status ok'>✅ OK: 3　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>FortiGate 50F to Hinet-1</span> <span class='device-ip'>(172.16.150.1)</span> <span class='device-detail' data-mobile-hidden='true'>https:403</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>FortiGate 50F to Hinet-2</span> <span class='device-ip'>(172.16.200.1)</span> <span class='device-detail' data-mobile-hidden='true'>https:403</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>FortiGate 60F</span> <span class='device-ip'>(10.10.100.1)</span> <span class='device-detail' data-mobile-hidden='true'>https:405</span></span></li></ul></details><details data-category-status='has-fail' open><summary class='summary-has-fail summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 2)</span><span class='category-title-status fail'>✅ OK: 1　❌ FAIL: 1　⚠️ 有異常</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG2008D-01</span> <span class='device-ip'>(10.10.101.39)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li><li class='fail'><span class='status-dot fail'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG2008D-test</span> <span class='device-ip'>(10.10.101.199)</span> <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></span></li></ul></details></details>
-<details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：25-1F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 3)</span><span class='category-title-status ok'>✅ OK: 3　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>25-1F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.3)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>25-1F客廳-ASUS AC68U</span> <span class='device-ip'>(10.10.101.11)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>25-1F阿姨-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.7)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG2008D-03 25-1F</span> <span class='device-ip'>(10.10.101.41)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details></details>
-<details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-1F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 2)</span><span class='category-title-status ok'>✅ OK: 2　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(新舜房間)</span> <span class='device-ip'>(10.10.101.17)</span> <span class='device-detail' data-mobile-hidden='true'>https:200</span></span></li><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>Xiaomi-AX3000T-1(餐廳)</span> <span class='device-ip'>(10.10.101.16)</span> <span class='device-detail' data-mobile-hidden='true'>https:200</span></span></li></ul></details></details>
-<details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-2F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-2F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.6)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details></details>
-<details class='location-details' ><summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-4F</summary><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：AP (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>27-4F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.4)</span> <span class='device-detail' data-mobile-hidden='true'>http:200</span></span></li></ul></details><details data-category-status='ok' ><summary class=' summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> <div class='summary-title-category-wrapper'><span class='category-title-main'>類別：Switch (總數: 1)</span><span class='category-title-status ok'>✅ OK: 1　🟢 全部 OK</span></div></summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-info-wrapper'><span class='device-name'>TP-Link TL-SG108E 27-4F</span> <span class='device-ip'>(10.10.101.31)</span> <span class='device-detail' data-mobile-hidden='true'>http:401</span></span></li></ul></details></details>
-        <details class='system-status-details' id='systemStatusDetails'>
-            <summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7V4"/><path d="M12 18v3"/><path d="M15 9l2.7 2.7"/><path d="M6.3 17.7L9 15"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="M17.7 6.3L15 9"/><path d="M9 15l-2.7 2.7"/></svg> <div class='summary-title-wrapper'><span class='summary-title-main'>系統資源使用率</span><span class='summary-title-sub'>(Orange Pi One)</span></div><button id='systemModeToggle' onclick='toggleSystemStatusMode()'>切換至精簡模式</button></summary>
-            <div class='system-status-content'>
-                <div class='resource-item detailed'>
-                    <div class='resource-label-row'>
-                        <span class='resource-label'>CPU 使用率:</span>
-                        <span class='resource-value-text ok'>4.1% (OK)</span>
-                    </div>
-                    <div class='progress-container'>
-                        <div class='progress-bar ok' style='width: 4.1%;'><span>4.1%</span></div>
-                    </div>
-                    <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
-                </div>
-                <div class='resource-item detailed'>
-                    <div class='resource-label-row'>
-                        <span class='resource-label'>記憶體使用率:</span>
-                        <span class='resource-value-text ok'>21.1% (OK)</span>
-                    </div>
-                    <div class='progress-container'>
-                        <div class='progress-bar ok' style='width: 21.1%;'><span>21.1%</span></div>
-                    </div>
-                    <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
-                </div>
-                <div class='resource-item detailed'>
-                    <div class='resource-label-row'>
-                        <span class='resource-label'>磁碟使用率 (/):</span>
-                        <span class='resource-value-text ok'>28% (OK)</span>
-                    </div>
-                    <div class='progress-container'>
-                        <div class='progress-bar ok' style='width: 28%;'><span>28%</span></div>
-                    </div>
-                    <span class='threshold-info'>(閾值: 警告 > 80%, 錯誤 > 90%)</span>
-                </div>
-                <div class='resource-item detailed'>
-                    <div class='resource-label-row'>
-                        <span class='resource-label'>平均負載 (5分鐘):</span>
-                        <span class='resource-value-text'>0.28</span>
-                    </div>
-                </div>
-                <div class='resource-item summary'>
-                    <span class='summary-label'>CPU:</span>
-                    <span class='summary-value ok'>4.1% (OK)</span>
-                </div>
-                <div class='resource-item summary'>
-                    <span class='summary-label'>記憶體:</span>
-                    <span class='summary-value ok'>21.1% (OK)</span>
-                </div>
-                <div class='resource-item summary'>
-                    <span class='summary-label'>磁碟:</span>
-                    <span class='summary-value ok'>28% (OK)</span>
-                </div>
-                <div class='resource-item summary'>
-                    <span class='summary-label'>負載:</span>
-                    <span class='summary-value'>0.28</span>
-                </div>
-            </div>
-        </details>
-        <p style='text-align: center; margin-top: 30px; font-size: 0.85em; color: var(--text-color); opacity: 0.6;'>🕒 更新時間：2025-08-01 11:09:54</p>
-    </div>
-</body>
-</html>
+
+                /* Dark theme */
+                body.dark-mode {
+                    --bg-color: #212529; /* 深色背景 */
+                    --text-color: #e9ecef; /* 淺灰文字 */
+                    --card-bg: #343a40;
+                    --border-color: #495057;
+                    --border-color-light: #5a6268;
+                    --summary-bg-light: #495057;
+                    --summary-bg-dark: #212529; /* 系統狀態頭部背景 */
+                    --fail-bg-light: #4a3c3c; /* 異常淺背景 (深色模式) */
+                    --fail-bg-dark: #dc3545; /* 異常深背景 (保持紅色) */
+                    --fail-text-color: #f8d7da; /* 異常文字顏色 (深色模式) */
+                    --ok-color: #2ecc71;
+                    --warn-color: #f1c40f;
+                    --fail-color: #e74c3c;
+                    --progress-bg: #5a7086;
+                    --progress-text-color: #ecf0f1;
+                    --toggle-bg: #6c757d;
+                    --toggle-circle: #ffffff;
+                    --toggle-border: #495057;
+                    --toggle-shadow: rgba(0,0,0,0.3);
+                    --button-bg: #0056b3; /* Darker blue for dark mode base (collapsed) */
+                    --button-hover-bg: #007bff; /* Lighter blue on hover in dark mode */
+                    --button-expanded-bg: #007bff; /* Lighter blue for expanded state in dark mode */
+                }
+
+                body {
+                    font-family: 'Inter', sans-serif;
+                    background: var(--bg-color);
+                    color: var(--text-color);
+                    padding: 10px;
+                    margin: 0;
+                    transition: background-color 0.3s, color 0.3s;
+                    line-height: 1.6;
+                }
+                .container {
+                    max-width: 900px;
+                    margin: 20px auto;
+                    padding: 25px;
+                    background: var(--card-bg);
+                    border-radius: 12px;
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.08); /* 更柔和的陰影 */
+                    transition: background-color 0.3s, box-shadow 0.3s;
+                }
+                h2 {
+                    text-align: center;
+                    color: var(--text-color);
+                    margin-bottom: 5px;
+                    transition: color 0.3s;
+                    font-size: 1.8em;
+                    font-weight: 600;
+                }
+                .update-info {
+                    text-align: center;
+                    font-size: 0.85em;
+                    color: var(--text-color);
+                    margin-bottom: 25px;
+                    opacity: 0.7;
+                }
+
+                /* 狀態顏色 */
+                .ok { color: var(--ok-color); }
+                .warn { color: var(--warn-color); }
+                .fail { color: var(--fail-color); }
+                
+                /* 頂部概覽儀表板 */
+                .overview-dashboard {
+                    background: var(--card-bg);
+                    color: var(--text-color);
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin-bottom: 30px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+                    text-align: center;
+                    border: 1px solid var(--border-color);
+                    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+                }
+                .overview-dashboard h3 {
+                    margin-top: 0;
+                    font-size: 1.5em;
+                    margin-bottom: 20px;
+                    color: var(--text-color);
+                    font-weight: 600;
+                }
+                .overview-stats {
+                    display: flex;
+                    justify-content: space-around;
+                    flex-wrap: wrap;
+                    gap: 20px;
+                }
+                .stat-item {
+                    flex: 1;
+                    min-width: 150px; /* 調整最小寬度，確保內容舒適顯示 */
+                    background-color: var(--bg-color);
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    font-size: 0.95em;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    border: 1px solid var(--border-color-light);
+                    transition: background-color 0.3s, border-color 0.3s;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+                }
+                .stat-label {
+                    color: var(--text-color);
+                    font-weight: 500;
+                    margin-bottom: 5px;
+                }
+                .stat-value {
+                    font-size: 2.2em; /* 增大數字 */
+                    font-weight: 700;
+                    line-height: 1;
+                }
+                .stat-item .ok {
+                    color: var(--ok-color);
+                }
+                .stat-item .fail {
+                    color: var(--fail-color);
+                }
+
+
+                /* 地點層級的樣式 */
+                details.location-details {
+                    margin: 15px 0;
+                    border: 1px solid var(--border-color);
+                    border-radius: 10px;
+                    background: var(--card-bg);
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+                }
+                details.location-details > summary {
+                    background: var(--summary-bg-light);
+                    color: var(--text-color);
+                    font-size: 1.15rem;
+                    padding: 15px 20px; /* 增大內邊距 */
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px; /* 增大圖示與文字間距 */
+                    transition: background-color 0.3s, color 0.3s;
+                    min-height: 44px; /* 確保觸摸目標大小 */
+                }
+                details.location-details > summary svg {
+                    min-width: 22px; /* 調整圖示大小 */
+                    min-height: 22px;
+                }
+                /* 隱藏預設箭頭 */
+                details.location-details > summary::marker,
+                details.location-details > summary::-webkit-details-marker {
+                    display: none;
+                }
+                /* 使用 ::before 插入 Emoji 圖示 */
+                details.location-details > summary::before {
+                    content: '▶'; /* 預設為向右箭頭 (收合) */
+                    font-size: 1.2em;
+                    margin-right: 8px;
+                    transition: transform 0.2s ease-in-out;
+                }
+                details.location-details[open] > summary::before {
+                    content: '▼'; /* 展開時為向下箭頭 */
+                    transform: rotate(0deg); /* 確保不旋轉 */
+                }
+
+
+                /* 內部設備類型 details 的樣式 */
+                details {
+                    margin: 10px 15px; /* 調整內邊距 */
+                    border: 1px solid var(--border-color-light);
+                    border-radius: 8px;
+                    background: var(--bg-color); /* Lighter than card-bg */
+                    box-shadow: 0 1px 5px rgba(0,0,0,0.03);
+                    overflow: hidden;
+                    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+                }
+                summary {
+                    font-size: 1rem;
+                    cursor: pointer;
+                    padding: 12px 15px; /* 調整內邊距 */
+                    border-radius: 6px;
+                    background: var(--summary-bg-light);
+                    margin-bottom: 0; /* 移除底部間距 */
+                    display: flex;
+                    align-items: center;
+                    gap: 10px; /* 增大圖示與文字間距 */
+                    font-weight: 500;
+                    transition: background-color 0.3s, color 0.3s;
+                    min-height: 44px; /* 確保觸摸目標大小 */
+                }
+                summary svg {
+                    min-width: 18px;
+                    min-height: 18px;
+                }
+                /* 隱藏預設箭頭 */
+                summary::marker,
+                summary::-webkit-details-marker {
+                    display: none;
+                }
+                /* 使用 ::before 插入 Emoji 圖示 */
+                summary::before {
+                    content: '▶'; /* 預設為向右箭頭 (收合) */
+                    font-size: 1.1em;
+                    margin-right: 6px;
+                    transition: transform 0.2s ease-in-out;
+                }
+                details[open] > summary::before {
+                    content: '▼'; /* 展開時為向下箭頭 */
+                    transform: rotate(0deg); /* 確保不旋轉 */
+                }
+
+
+                /* 狀態指示燈 */
+                .status-dot {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    display: inline-block;
+                    margin-right: 5px;
+                    flex-shrink: 0;
+                }
+                .status-dot.ok { background-color: var(--ok-color); }
+                .status-dot.fail { background-color: var(--fail-color); }
+                .status-dot.warn { background-color: var(--warn-color); }
+
+
+                /* 異常狀態的樣式強化 */
+                summary.summary-has-fail {
+                    background: var(--fail-bg-light);
+                    border: 1px solid var(--fail-color);
+                    color: var(--fail-text-color);
+                    box-shadow: 0 2px 8px rgba(231,76,60,0.1);
+                }
+                details.location-details.has-fail > summary {
+                    background: var(--fail-bg-dark);
+                    color: white;
+                    border: none;
+                    box-shadow: 0 4px 15px rgba(231,76,60,0.2);
+                }
+                details.location-details.has-fail > summary svg {
+                    stroke: white; /* 異常時圖示變白 */
+                }
+                /* 在黑暗模式下強化異常邊框 */
+                body.dark-mode summary.summary-has-fail {
+                    border: 1px solid var(--fail-color);
+                }
+
+
+                details ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    border-top: 1px solid var(--border-color-light); /* 更淺的分割線 */
+                    padding-top: 10px;
+                }
+                details li {
+                    padding: 10px 15px; /* 調整內邊距 */
+                    border-bottom: 1px solid var(--border-color-light);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px; /* 調整間距 */
+                    /* white-space: nowrap; */ /* 移除此行，允許換行 */
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    font-size: 0.95em;
+                    text-align: left; /* 確保文字左對齊 */
+                    cursor: pointer; /* 點擊行時應有指標提示 */
+                }
+                details li:active, details li:hover {
+                    background-color: var(--border-color-light); /* 點擊時或懸停時的背景顏色 */
+                    transition: background-color 0.2s;
+                }
+                details li .device-name {
+                    font-weight: 600;
+                    flex-shrink: 0;
+                }
+                details li .device-ip {
+                    flex-shrink: 0;
+                    opacity: 0.8;
+                    margin-left: 5px; /* 調整 IP 與名稱間距 */
+                }
+                details li .device-detail {
+                    flex-grow: 1;
+                    text-align: left;
+                    padding-left: 10px;
+                    white-space: normal; /* 允許換行 */
+                    overflow: visible; /* 允許內容超出，如果需要 */
+                    text-overflow: clip; /* 移除 ellipsis 效果 */
+                    font-size: 0.9em;
+                    opacity: 0.9;
+                }
+
+                details li:last-child {
+                    border-bottom: none;
+                }
+
+                /* 系統資源區塊 */
+                .system-status {
+                    margin-top: 30px;
+                    padding: 0;
+                    border: 1px solid var(--border-color);
+                    border-radius: 10px;
+                    background: var(--card-bg);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+                }
+                .system-status h3 {
+                    margin-top: 0;
+                    color: white;
+                    text-align: center;
+                    margin-bottom: 0; /* 移除底部間距 */
+                    padding: 15px;
+                    background: var(--summary-bg-dark);
+                    border-top-left-radius: 9px; /* 配合父元素圓角 */
+                    border-top-right-radius: 9px;
+                    transition: background-color 0.3s;
+                    font-size: 1.3em;
+                    font-weight: 600;
+                }
+                .system-status .resource-item {
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 0;
+                    padding: 15px 20px;
+                    border-bottom: 1px solid var(--border-color-light);
+                }
+                .system-status .resource-item:last-of-type {
+                    border-bottom: none;
+                }
+                .system-status .resource-label {
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: var(--text-color);
+                    font-size: 1em;
+                }
+                .system-status .resource-value {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    width: 100%;
+                    font-size: 1em;
+                }
+                .system-status .threshold-info {
+                    font-size: 0.75em; /* 稍微縮小字體 */
+                    color: var(--text-color);
+                    opacity: 0.6; /* 稍微降低透明度 */
+                    margin-left: 10px;
+                    white-space: nowrap;
+                }
+                .progress-container {
+                    width: 100%;
+                    background-color: var(--progress-bg);
+                    border-radius: 6px; /* 圓角 */
+                    overflow: hidden;
+                    height: 28px; /* 增大高度 */
+                    margin-top: 8px;
+                    position: relative;
+                    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+                }
+                .progress-bar {
+                    height: 100%;
+                    width: 0%;
+                    background-color: var(--ok-color); /* Default */
+                    border-radius: 6px;
+                    transition: width 0.5s ease-in-out, background-color 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center; /* 讓數字居中 */
+                    color: white;
+                    font-size: 0.9em;
+                    font-weight: bold;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    box-sizing: border-box;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .progress-bar.warn { background-color: var(--warn-color); }
+                .progress-bar.fail { background-color: var(--fail-color); }
+                .progress-bar span {
+                    position: relative;
+                    z-index: 1;
+                    color: white;
+                    text-shadow: 0 0 3px rgba(0,0,0,0.6); /* 增加陰影讓文字更清晰 */
+                }
+                .progress-container .progress-text-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.9em;
+                    font-weight: bold;
+                    color: var(--progress-text-color);
+                    z-index: 0;
+                }
+
+                /* 精簡模式 */
+                .system-status.compact-mode .resource-item.detailed {
+                    display: none; /* 隱藏詳細資訊 */
+                }
+                .system-status.compact-mode .resource-item.summary {
+                    display: flex; /* 顯示摘要資訊 */
+                }
+                .system-status .resource-item.summary {
+                    display: none; /* 預設隱藏摘要 */
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 20px;
+                }
+                .system-status .resource-item.summary .summary-label {
+                    font-weight: 600;
+                }
+                .system-status .resource-item.summary .summary-value {
+                    font-weight: 500;
+                }
+
+
+                /* Dark Mode Toggle Switch */
+                .top-controls {
+                    display: flex;
+                    justify-content: space-between; /* 左右對齊 */
+                    align-items: center;
+                    margin-bottom: 20px;
+                    flex-wrap: wrap; /* 允許換行 */
+                    gap: 15px; /* 元素間距 */
+                }
+                .theme-switch-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .theme-switch {
+                    display: inline-block;
+                    height: 28px; /* 增大開關大小 */
+                    position: relative;
+                    width: 56px; /* 增大開關大小 */
+                }
+                .theme-switch input {
+                    display: none;
+                }
+                .slider {
+                    background-color: var(--toggle-bg);
+                    border-radius: 28px; /* 配合增大大小 */
+                    bottom: 0;
+                    cursor: pointer;
+                    left: 0;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    transition: .4s;
+                    border: 1px solid var(--toggle-border);
+                    box-shadow: inset 0 0 5px var(--toggle-shadow);
+                }
+                .slider:before {
+                    background-color: var(--toggle-circle);
+                    border-radius: 50%;
+                    bottom: 3px; /* 調整位置 */
+                    content: '';
+                    height: 22px; /* 調整圓點大小 */
+                    left: 3px; /* 調整位置 */
+                    position: absolute;
+                    width: 22px; /* 調整圓點大小 */
+                    transition: .4s;
+                }
+                input:checked + .slider {
+                    background-color: #007bff; /* 藍色，更現代的亮色 */
+                    border-color: #007bff;
+                }
+                input:checked + .slider:before {
+                    transform: translateX(28px); /* 配合增大大小 */
+                }
+                .theme-switch-label {
+                    font-size: 0.9em;
+                    color: var(--text-color);
+                }
+                .theme-switch-icon {
+                    width: 20px; /* 調整圖示大小 */
+                    height: 20px;
+                    vertical-align: middle;
+                    fill: currentColor; /* Inherit color from text */
+                    stroke: currentColor; /* 確保線條圖示顏色正確 */
+                }
+                .theme-switch-icon.sun { display: inline-block; }
+                .theme-switch-icon.moon { display: none; }
+                body.dark-mode .theme-switch-icon.sun { display: none; }
+                body.dark-mode .theme-switch-icon.moon { display: inline-block; }
+
+                /* Control Buttons */
+                .control-buttons {
+                    display: flex;
+                    justify-content: space-between; /* 左右對齊 */
+                    align-items: center;
+                    margin-bottom: 20px;
+                    flex-wrap: wrap; /* 允許按鈕組內換行 */
+                    gap: 15px; /* 元素間距 */
+                }
+                .control-buttons button {
+                    background-color: var(--button-bg); /* Default collapsed state */
+                    color: white; /* 確保文字為白色 */
+                    font-weight: bold; /* 確保文字為粗體 */
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 15px;
+                    cursor: pointer;
+                    font-size: 0.9em;
+                    transition: background-color 0.3s ease;
+                    white-space: nowrap; /* 防止文字換行 */
+                    flex-shrink: 1; /* 允許按鈕縮小 */
+                }
+                .control-buttons button:hover {
+                    background-color: var(--button-hover-bg);
+                }
+
+                /* Expanded state for buttons */
+                .control-buttons button[data-state=expanded] {
+                    background-color: var(--button-expanded-bg); /* A slightly darker shade */
+                }
+                /* Collapsed state for buttons (default is fine, but can explicitly set if needed) */
+                .control-buttons button[data-state=collapsed] {
+                    background-color: var(--button-bg); /* Base color for collapsed state */
+                }
+
+
+                /* Mobile Optimization */
+                @media (max-width: 600px) {
+                    body { padding: 5px; }
+                    .container { margin: 10px auto; padding: 15px; }
+                    h2 { font-size: 1.5em; }
+                    .update-info { font-size: 0.7em; margin-bottom: 15px; }
+                    
+                    .overview-dashboard {
+                        padding: 15px;
+                        margin-bottom: 20px;
+                    }
+                    .overview-dashboard h3 {
+                        font-size: 1.3em;
+                        margin-bottom: 15px;
+                    }
+                    .overview-stats {
+                        gap: 10px;
+                    }
+                    .stat-item {
+                        min-width: 100px;
+                        padding: 10px 12px;
+                        font-size: 0.8em;
+                    }
+                    .stat-value {
+                        font-size: 1.6em;
+                    }
+
+                    .top-controls {
+                        flex-direction: row; /* 保持在同一行 */
+                        align-items: center;
+                        gap: 10px;
+                        justify-content: space-between; /* 確保左右對齊 */
+                    }
+                    .control-buttons {
+                        justify-content: flex-end; /* 按鈕組右對齊 */
+                        /* width: auto; 讓它根據內容自動調整寬度，而不是100% */
+                    }
+                    .theme-switch-wrapper {
+                        /* width: auto; 讓它根據內容自動調整寬度 */
+                        justify-content: flex-start; /* 開關靠左 */
+                    }
+
+                    details.location-details > summary {
+                        font-size: 1rem;
+                        padding: 12px 15px;
+                        gap: 8px;
+                    }
+                    details.location-details > summary svg {
+                        min-width: 18px;
+                        min-height: 18px;
+                    }
+                    summary { font-size: 0.9rem; padding: 10px 12px; gap: 6px; }
+                    summary svg {
+                        min-width: 16px;
+                        min-height: 16px;
+                    }
+                    details li { font-size: 0.85em; padding: 8px 12px; gap: 5px; }
+                    
+                    /* 手機版：設備詳細資訊預設隱藏 */
+                    details li .device-detail {
+                        display: none; /* 預設隱藏 */
+                        white-space: normal; /* 允許換行 */
+                        overflow: visible;
+                        text-overflow: clip;
+                    }
+                    /* 當 li 被點擊時顯示詳細資訊 */
+                    details li.show-detail .device-detail {
+                        display: block; /* 顯示 */
+                        margin-top: 5px; /* 與上方內容間距 */
+                        padding-left: 0; /* 移除左側填充 */
+                        font-size: 0.85em; /* 稍微縮小字體 */
+                    }
+                    /* 調整 li 佈局，使其在手機版面下，名稱和 IP 可以在一行，詳細資訊在下一行 */
+                    details li {
+                        flex-direction: column; /* 垂直排列 */
+                        align-items: flex-start; /* 左對齊 */
+                        padding-bottom: 5px; /* 調整底部間距 */
+                    }
+                    details li .status-dot {
+                        margin-right: 5px;
+                    }
+                    details li .device-name, details li .device-ip {
+                        white-space: normal; /* 允許換行 */
+                        text-align: left;
+                        width: 100%; /* 佔滿一行 */
+                    }
+                    details li .device-ip {
+                        margin-left: 0; /* 移除左側間距 */
+                        font-size: 0.9em; /* 稍微縮小 IP 字體 */
+                    }
+
+                    .system-status { padding: 0; margin-top: 20px;}
+                    .system-status h3 {
+                        font-size: 1.1em;
+                        padding: 12px;
+                    }
+                    .system-status .resource-item.detailed {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        padding: 10px 15px;
+                    }
+                    .system-status .resource-item.detailed .resource-label {
+                        font-size: 0.9em;
+                        margin-bottom: 5px;
+                    }
+                    .system-status .resource-item.detailed .resource-value {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        width: 100%;
+                    }
+                    .system-status .resource-item.detailed .threshold-info {
+                        margin-left: 0;
+                        margin-top: 5px;
+                        text-align: left;
+                    }
+                    .system-status .resource-item.detailed .resource-value span {
+                        width: 100%;
+                        text-align: left;
+                    }
+                    .progress-container {
+                        height: 24px;
+                    }
+                    .progress-bar {
+                        font-size: 0.75em;
+                    }
+                    .theme-switch {
+                        height: 22px;
+                        width: 44px;
+                    }
+                    .slider:before {
+                        height: 18px;
+                        width: 18px;
+                        bottom: 2px;
+                        left: 2px;
+                    }
+                    input:checked + .slider:before {
+                        transform: translateX(22px);
+                    }
+                    .theme-switch-icon {
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+            </style>
+<script>
+                function toggleDarkMode() {
+                    const body = document.body;
+                    body.classList.toggle('dark-mode');
+                    if (body.classList.contains('dark-mode')) {
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        localStorage.setItem('theme', 'light');
+                    }
+                }
+
+                function toggleSystemStatusMode() {
+                    const systemStatusDiv = document.querySelector('.system-status');
+                    const toggleButton = document.getElementById('systemModeToggle');
+                    systemStatusDiv.classList.toggle('compact-mode');
+                    if (systemStatusDiv.classList.contains('compact-mode')) {
+                        localStorage.setItem('systemStatusMode', 'compact');
+                        toggleButton.textContent = '切換至詳細模式';
+                    } else {
+                        localStorage.setItem('systemStatusMode', 'detailed');
+                        toggleButton.textContent = '切換至精簡模式';
+                    }
+                }
+
+                // 新增：切換所有異常區塊的展開/收合狀態
+                function toggleAnomalySections() {
+                    const anomalyLocationDetails = document.querySelectorAll('details.location-details.has-fail');
+                    const anomalyCategoryDetails = document.querySelectorAll('details:not(.location-details) summary.summary-has-fail');
+                    
+                    let anyAnomalyOpen = false;
+
+                    // 檢查是否有任何異常的地點或類別區塊是展開的
+                    anomalyLocationDetails.forEach(detail => {
+                        if (detail.hasAttribute('open')) {
+                            anyAnomalyOpen = true;
+                        }
+                    });
+                    if (!anyAnomalyOpen) { // 如果地點層級沒有展開的異常，才檢查類別層級
+                        anomalyCategoryDetails.forEach(summary => {
+                            if (summary.parentElement.hasAttribute('open')) {
+                                anyAnomalyOpen = true;
+                            }
+                        });
+                    }
+
+                    // 根據當前狀態進行展開或收合
+                    anomalyLocationDetails.forEach(detail => {
+                        if (anyAnomalyOpen) {
+                            detail.removeAttribute('open'); // 收合
+                        } else {
+                            detail.setAttribute('open', ''); // 展開
+                        }
+                    });
+
+                    anomalyCategoryDetails.forEach(summary => {
+                        const detail = summary.parentElement;
+                        if (anyAnomalyOpen) {
+                            detail.removeAttribute('open'); // 收合
+                        } else {
+                            detail.setAttribute('open', ''); // 展開
+                        }
+                    });
+
+                    // 更新按鈕文字和狀態
+                    const button = document.getElementById('toggleAnomalyBtn');
+                    if (anyAnomalyOpen) {
+                        button.textContent = '展開所有異常';
+                        button.dataset.state = 'collapsed';
+                    } else {
+                        button.textContent = '收合所有異常';
+                        button.dataset.state = 'expanded';
+                    }
+                }
+
+                // 新增：切換所有區塊的展開/收合狀態
+                function toggleAllSections() {
+                    const allDetails = document.querySelectorAll('details');
+                    let anyOpen = false;
+
+                    // 檢查是否有任何 details 元素是展開的
+                    allDetails.forEach(detail => {
+                        if (detail.hasAttribute('open')) {
+                            anyOpen = true;
+                        }
+                    });
+
+                    // 根據當前狀態進行展開或收合
+                    allDetails.forEach(detail => {
+                        if (anyOpen) {
+                            detail.removeAttribute('open'); // 全部收合
+                        } else {
+                            detail.setAttribute('open', ''); // 全部展開
+                        }
+                    });
+
+                    // 更新按鈕文字和狀態
+                    const button = document.getElementById('toggleAllBtn');
+                    if (anyOpen) {
+                        button.textContent = '全部展開';
+                        button.dataset.state = 'collapsed';
+                    } else {
+                        button.textContent = '全部收合';
+                        button.dataset.state = 'expanded';
+                    }
+                }
+
+                // 新增：點擊設備列表項目時切換詳細資訊顯示
+                function setupDeviceDetailToggle() {
+                    const deviceListItems = document.querySelectorAll('details li');
+                    deviceListItems.forEach(item => {
+                        item.addEventListener('click', function(event) {
+                            // 阻止事件冒泡到父級 details 標籤，避免其收合
+                            event.stopPropagation(); 
+                            // 僅在手機版面下啟用此功能
+                            if (window.innerWidth <= 600) {
+                                this.classList.toggle('show-detail');
+                            }
+                        });
+                    });
+                }
+
+                // Apply theme and system status mode on load
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Dark Mode
+                    const savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'dark') {
+                        document.body.classList.add('dark-mode');
+                        document.getElementById('themeToggle').checked = true;
+                    }
+
+                    // System Status Mode
+                    const savedSystemMode = localStorage.getItem('systemStatusMode');
+                    const systemStatusDiv = document.querySelector('.system-status');
+                    const toggleSystemModeBtn = document.getElementById('systemModeToggle');
+                    if (savedSystemMode === 'compact') {
+                        systemStatusDiv.classList.add('compact-mode');
+                        toggleSystemModeBtn.textContent = '切換至詳細模式';
+                    } else {
+                        // Default or saved as detailed
+                        systemStatusDiv.classList.remove('compact-mode');
+                        toggleSystemModeBtn.textContent = '切換至精簡模式';
+                    }
+
+                    // 初始化按鈕狀態
+                    const toggleAnomalyBtn = document.getElementById('toggleAnomalyBtn');
+                    const toggleAllBtn = document.getElementById('toggleAllBtn');
+
+                    // 判斷「展開/收合所有異常」按鈕的初始狀態
+                    const initialAnomalyLocationDetails = document.querySelectorAll('details.location-details.has-fail');
+                    const initialAnomalyCategoryDetails = document.querySelectorAll('details:not(.location-details) summary.summary-has-fail');
+                    let initialAnyAnomalyOpen = false;
+                    initialAnomalyLocationDetails.forEach(detail => {
+                        if (detail.hasAttribute('open')) {
+                            initialAnyAnomalyOpen = true;
+                        }
+                    });
+                    if (!initialAnyAnomalyOpen) {
+                        initialAnomalyCategoryDetails.forEach(summary => {
+                            if (summary.parentElement.hasAttribute('open')) {
+                                initialAnyAnomalyOpen = true;
+                            }
+                        });
+                    }
+
+                    if (initialAnyAnomalyOpen) {
+                        toggleAnomalyBtn.textContent = '收合所有異常';
+                        toggleAnomalyBtn.dataset.state = 'expanded';
+                    } else {
+                        toggleAnomalyBtn.textContent = '展開所有異常';
+                        toggleAnomalyBtn.dataset.state = 'collapsed';
+                    }
+
+                    // 判斷「全部展開/收合」按鈕的初始狀態
+                    const allDetails = document.querySelectorAll('details');
+                    let initialAnyAllOpen = false;
+                    allDetails.forEach(detail => {
+                        if (detail.hasAttribute('open')) {
+                            initialAnyAllOpen = true;
+                        }
+                    });
+
+                    if (initialAnyAllOpen) {
+                        toggleAllBtn.textContent = '全部收合';
+                        toggleAllBtn.dataset.state = 'expanded';
+                    } else {
+                        toggleAllBtn.textContent = '全部展開';
+                        toggleAllBtn.dataset.state = 'collapsed';
+                    }
+
+                    // 設置設備詳細資訊切換功能
+                    setupDeviceDetailToggle();
+                });
+            </script>
+</head><body>
+<div class='container'>
+<div class='top-controls'>
+<div class='theme-switch-wrapper'>
+<span class='theme-switch-label'>
+                <svg class='theme-switch-icon sun' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/></svg>
+                <svg class='theme-switch-icon moon' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'></path></svg>
+            </span>
+<label class='theme-switch' for='themeToggle'>
+<input type='checkbox' id='themeToggle' onclick='toggleDarkMode()'>
+<div class='slider'></div>
+</label>
+</div>
+<div class='control-buttons'>
+<button id='toggleAnomalyBtn' onclick="toggleAnomalySections()">展開/收合所有異常</button>
+<button id='toggleAllBtn' onclick="toggleAllSections()">全部展開/收合</button>
+</div>
+</div>
+<h2>🌐 網路設備狀態報告</h2><p class='update-info'>每5分鐘更新一次</p>
+<div class='overview-dashboard'>
+<h3>設備狀態總覽</h3>
+<div class='overview-stats'>
+<div class='stat-item'>
+<span class='stat-label'>總設備數</span>
+<div class='stat-value'>27</div>
+</div>
+<div class='stat-item'>
+<span class='stat-label ok'>正常設備</span>
+<div class='stat-value ok'>21</div>
+</div>
+<div class='stat-item'>
+<span class='stat-label fail'>異常設備</span>
+<div class='stat-value fail'>6</div>
+</div>
+</div>
+</div>
+<details class='location-details has-fail' open><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：電梯梯間(主線路)</summary><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> 類別：Firewall (總數: 3)　✅ OK: 3　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>FortiGate 50F to Hinet-1</span> <span class='device-ip'>(172.16.150.1)</span> - <span class='device-detail'>https:403</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>FortiGate 50F to Hinet-2</span> <span class='device-ip'>(172.16.200.1)</span> - <span class='device-detail'>https:403</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>FortiGate 60F</span> <span class='device-ip'>(10.10.100.1)</span> - <span class='device-detail'>https:405</span></li></ul></details><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>ASUS AX88U</span> <span class='device-ip'>(10.10.101.2)</span> - <span class='device-detail'>http:200</span></li></ul></details><details data-category-status='FAIL' open><summary class='summary-has-fail'><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 2)　✅ OK: 1　❌ FAIL: 1　⚠️ 有異常</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG2008D-01</span> <span class='device-ip'>(10.10.101.39)</span> - <span class='device-detail'>http:200</span></li><li class='fail'><span class='status-dot fail'></span><span class='device-name'>TP-Link TL-SG2008D-test</span> <span class='device-ip'>(10.10.101.199)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li></ul></details></details>
+<details class='location-details has-fail' open><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：25-2F</summary><details data-category-status='OK' open><summary class='summary-has-fail'><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 2)　✅ OK: 1　❌ FAIL: 1　⚠️ 有異常</summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-name'>25-2F客廳-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.165)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>25-2F小孩房間-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.8)</span> - <span class='device-detail'>http:200</span></li></ul></details><details data-category-status='FAIL' open><summary class='summary-has-fail'><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 1)　✅ OK: 0　❌ FAIL: 1　⚠️ 有異常</summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-name'>TP-Link TL-SG108E 25-2F</span> <span class='device-ip'>(10.10.101.164)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li></ul></details></details>
+<details class='location-details has-fail' open><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：25-3F</summary><details data-category-status='FAIL' open><summary class='summary-has-fail'><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 2)　✅ OK: 0　❌ FAIL: 2　⚠️ 有異常</summary><ul><li class='fail'><span class='status-dot fail'></span><span class='device-name'>25-3F客廳-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.166)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li><li class='fail'><span class='status-dot fail'></span><span class='device-name'>25-3F小孩房間-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.167)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li></ul></details><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG108E 25-3F</span> <span class='device-ip'>(10.10.101.34)</span> - <span class='device-detail'>http:401</span></li></ul></details></details>
+<details class='location-details has-fail' open><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fail"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg> 地點：27-3F</summary><details data-category-status='FAIL' open><summary class='summary-has-fail'><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 3)　✅ OK: 2　❌ FAIL: 1　⚠️ 有異常</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>UniFi-UDR</span> <span class='device-ip'>(10.10.100.4)</span> - <span class='device-detail'>https:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>Xiaomi-AX3000T-1(27號三樓主臥)</span> <span class='device-ip'>(10.10.101.15)</span> - <span class='device-detail'>https:200</span></li><li class='fail'><span class='status-dot fail'></span><span class='device-name'>Xiaomi-AX3000T-1(27號三樓客廳)</span> <span class='device-ip'>(10.10.101.170)</span> - <span class='device-detail' data-mobile-hidden='true'>Ping Failed (3 retries)</span></li></ul></details><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 3)　✅ OK: 3　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>HP 1810-8G 27-3F</span> <span class='device-ip'>(10.10.101.38)</span> - <span class='device-detail'>http:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG108E 27-3F</span> <span class='device-ip'>(10.10.101.36)</span> - <span class='device-detail'>http:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG2008D-02 27-3F</span> <span class='device-ip'>(10.10.101.40)</span> - <span class='device-detail'>http:200</span></li></ul></details></details>
+<details class='location-details ' ><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：25-1F</summary><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 3)　✅ OK: 3　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>25-1F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.3)</span> - <span class='device-detail'>http:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>25-1F客廳-ASUS AC68U</span> <span class='device-ip'>(10.10.101.11)</span> - <span class='device-detail'>http:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>25-1F阿姨-ASUS AC66U B1</span> <span class='device-ip'>(10.10.101.7)</span> - <span class='device-detail'>http:200</span></li></ul></details><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG2008D-03 25-1F</span> <span class='device-ip'>(10.10.101.41)</span> - <span class='device-detail'>http:200</span></li></ul></details></details>
+<details class='location-details ' ><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-1F</summary><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 2)　✅ OK: 2　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>Xiaomi-AX3000T-1(新舜房間)</span> <span class='device-ip'>(10.10.101.17)</span> - <span class='device-detail'>https:200</span></li><li class='ok'><span class='status-dot ok'></span><span class='device-name'>Xiaomi-AX3000T-1(餐廳)</span> <span class='device-ip'>(10.10.101.16)</span> - <span class='device-detail'>https:200</span></li></ul></details></details>
+<details class='location-details ' ><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-2F</summary><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>27-2F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.6)</span> - <span class='device-detail'>http:200</span></li></ul></details></details>
+<details class='location-details ' ><summary><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ok"><path d="M12 22s-8-4-8-10a8 8 0 0 1 16 0c0 6-8 10-8 10z"/><circle cx="12" cy="10" r="3"/></svg> 地點：27-4F</summary><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55A9 9 0 0 1 12 8a9 9 0 0 1 7 4.55"/><path d="M2 8.8C8.04 2.93 16.73 2.59 22 8.8"/><line x1="12" x2="12" y1="20" y2="20.01"/></svg> 類別：AP (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>27-4F-ASUS RT-AC68U</span> <span class='device-ip'>(10.10.101.4)</span> - <span class='device-detail'>http:200</span></li></ul></details><details data-category-status='OK' ><summary class=''><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg> 類別：Switch (總數: 1)　✅ OK: 1　🟢 全部 OK</summary><ul><li class='ok'><span class='status-dot ok'></span><span class='device-name'>TP-Link TL-SG108E 27-4F</span> <span class='device-ip'>(10.10.101.31)</span> - <span class='device-detail'>http:401</span></li></ul></details></details>
+<div class='system-status'>
+<h3>💻 系統資源使用率 (本機 Orange Pi One) <button id='systemModeToggle' onclick='toggleSystemStatusMode()'>切換至精簡模式</button></h3>
+<div class='resource-item detailed'>
+<span class='resource-label'>CPU 使用率:</span>
+<div class='progress-container'>
+<div class='progress-bar ok' style='width: 2.1%;'><span>2.1%</span></div>
+</div>
+<div class='resource-value'>
+<span class='ok'>(OK)</span>
+<span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
+</div>
+</div>
+<div class='resource-item summary'>
+<span class='summary-label'>CPU:</span>
+<span class='summary-value ok'>2.1% (OK)</span>
+</div>
+<div class='resource-item detailed'>
+<span class='resource-label'>記憶體使用率:</span>
+<div class='progress-container'>
+<div class='progress-bar ok' style='width: 20.2%;'><span>20.2%</span></div>
+</div>
+<div class='resource-value'>
+<span class='ok'>(OK)</span>
+<span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
+</div>
+</div>
+<div class='resource-item summary'>
+<span class='summary-label'>記憶體:</span>
+<span class='summary-value ok'>20.2% (OK)</span>
+</div>
+<div class='resource-item detailed'>
+<span class='resource-label'>磁碟使用率 (/):</span>
+<div class='progress-container'>
+<div class='progress-bar ok' style='width: 28%;'><span>28%</span></div>
+</div>
+<div class='resource-value'>
+<span class='ok'>(OK)</span>
+<span class='threshold-info'>(閾值: 警告 > 80%, 錯誤 > 90%)</span>
+</div>
+</div>
+<div class='resource-item summary'>
+<span class='summary-label'>磁碟:</span>
+<span class='summary-value ok'>28% (OK)</span>
+</div>
+<div class='resource-item detailed'>
+<span class='resource-label'>平均負載 (5分鐘):</span>
+<div class='resource-value'>
+<span>0.22</span>
+</div>
+</div>
+<div class='resource-item summary'>
+<span class='summary-label'>負載:</span>
+<span class='summary-value'>0.22</span>
+</div>
+</div>
+<p>🕒 更新時間：2025-08-08 11:12:18</p></div></body></html>
