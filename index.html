@@ -424,7 +424,6 @@
         .progress-bar.fail { background-color: var(--fail-color); }
         .threshold-info { font-size: 0.7em; color: var(--text-color); opacity: 0.6; margin-left: 0; margin-top: 6px; text-align: left; width: 100%; }
         
-        /* [NEW] v2.9.2 - Styles for simple system resource view */
         .system-status-content.simple-mode .resource-item.detailed { flex-direction: row; align-items: center; padding-bottom: 8px; margin-bottom: 8px; }
         .system-status-content.simple-mode .resource-label-row { flex-basis: 180px; margin-bottom: 0; flex-shrink: 0; font-size: 0.95em; }
         .system-status-content.simple-mode .progress-container { flex-grow: 1; }
@@ -454,13 +453,18 @@
 
         @media (max-width: 600px) {
             body { padding: 10px; }
-            /* [MODIFIED] v2.9.2 - Reduce horizontal padding for more space */
             .container { margin: 15px auto; padding: 20px 15px; }
             .overview-dashboard { padding: 20px; margin-bottom: 25px; }
-            /* [MODIFIED] v2.9.2 - Adjust top controls for better mobile layout */
             .top-controls { flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
             .control-buttons { flex-direction: row; width: auto; justify-content: flex-end; gap: 10px; }
             .control-buttons button { width: auto; flex-grow: 1; text-align: center; }
+            
+            /* [NEW] v2.9.3 - Force overview stats to a single line on mobile */
+            .overview-stats { flex-wrap: nowrap; gap: 10px; }
+            .stat-item { min-width: 0; padding: 15px 5px; }
+            .stat-label { font-size: 0.85em; margin-bottom: 6px; }
+            .stat-value { font-size: 2em; }
+
             .status-bubble { width: 24px; height: 24px; font-size: 0.85em; }
             .status-bubbles { margin-right: 6px; }
             details.location-details > details { margin: 10px 15px 0 15px; } 
@@ -468,7 +472,6 @@
         }
     </style>
     <script>
-        // [MODIFIED] v2.9.2 - Added toggleSystemDetailsMode and updated DOMContentLoaded
         function toggleDarkMode(){document.body.classList.toggle("dark-mode");localStorage.setItem("theme",document.body.classList.contains("dark-mode")?"dark":"light")}function toggleErrorFilter(){const t=document.body,e=document.getElementById("filterToggleBtn");t.classList.contains("errors-filtered")?(t.classList.remove("errors-filtered"),e.textContent="只顯示異常設備"):(t.classList.add("errors-filtered"),e.textContent="顯示所有設備",document.querySelectorAll("details.location-details.has-fail").forEach(t=>{t.open=!0,t.querySelectorAll("details[data-category-status='has-fail']").forEach(t=>{t.open=!0})}))}function toggleAllSections(){const t=document.querySelectorAll("details.location-details, details.location-details > details");let e=Array.from(t).some(t=>t.open&&null!==t.offsetParent);t.forEach(t=>{null!==t.offsetParent&&(t.open=!e)});const o=document.getElementById("toggleAllBtn");let n=Array.from(t).some(t=>t.open&&null!==t.offsetParent);n?(o.textContent="全部收合",o.dataset.state="expanded"):(o.textContent="全部展開",o.dataset.state="collapsed")}function toggleSystemDetailsMode(){const t=document.querySelector(".system-status-content"),e=document.getElementById("systemModeToggle");t.classList.toggle("simple-mode"),t.classList.contains("simple-mode")?(e.textContent="顯示詳細",localStorage.setItem("systemDetailsMode","simple")):(e.textContent="顯示精簡",localStorage.setItem("systemDetailsMode","detailed"))}document.addEventListener("DOMContentLoaded",()=>{const t=localStorage.getItem("theme");(t==="dark"||"light"!==t&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&(document.body.classList.add("dark-mode"),document.getElementById("themeToggle").checked=!0);const e=document.getElementById("toggleAllBtn");if(e){let t=Array.from(document.querySelectorAll("details")).some(t=>t.open);t?(e.textContent="全部收合",e.dataset.state="expanded"):(e.textContent="全部展開",e.dataset.state="collapsed")}const o=document.querySelector(".system-status-content"),n=document.getElementById("systemModeToggle");o&&n&&("simple"===localStorage.getItem("systemDetailsMode")?(o.classList.add("simple-mode"),n.textContent="顯示詳細"):(o.classList.remove("simple-mode"),n.textContent="顯示精簡"),n.style.display="inline-block")});
     </script>
 </head>
@@ -492,7 +495,7 @@
         </div>
         <h2>🌐 網路設備狀態報告</h2>
         <p class='update-info'>每5分鐘更新一次</p>
-        <p class='script-version'>版本號：v2.9.2</p>
+        <p class='script-version'>版本號：v2.9.3</p>
         <div class='overview-dashboard'>
             <h3>設備狀態總覽</h3>
             <div class='overview-stats'>
@@ -522,13 +525,13 @@
             <summary class='summary-with-arrow'><span class='arrow-icon collapsed-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class='arrow-icon expanded-arrow'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7V4"/><path d="M12 18v3"/><path d="M15 9l2.7 2.7"/><path d="M6.3 17.7L9 15"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="M17.7 6.3L15 9"/><path d="M9 15l-2.7 2.7"/></svg> <div class='summary-title-wrapper'><span class='summary-title-main'>系統資源使用率</span><span class='summary-title-sub'>(Orange Pi One)</span></div><button id='systemModeToggle' onclick='toggleSystemDetailsMode()'>顯示精簡</button></summary>
             <div class='system-status-content'>
                 <div class='resource-item detailed' data-resource="cpu">
-                    <div class='resource-label-row'><span class='resource-label'>CPU 使用率:</span><span class='resource-value-text ok'>6.0% (OK)</span></div>
-                    <div class='progress-container'><div class='progress-bar ok' style='width: 6.0%;'><span>6.0%</span></div></div>
+                    <div class='resource-label-row'><span class='resource-label'>CPU 使用率:</span><span class='resource-value-text ok'>4.1% (OK)</span></div>
+                    <div class='progress-container'><div class='progress-bar ok' style='width: 4.1%;'><span>4.1%</span></div></div>
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="mem">
-                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.5% (OK)</span></div>
-                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.5%;'><span>20.5%</span></div></div>
+                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.7% (OK)</span></div>
+                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.7%;'><span>20.7%</span></div></div>
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="disk">
@@ -537,12 +540,12 @@
                     <span class='threshold-info'>(閾值: 警告 > 80%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="load">
-                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.09</span></div>
+                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.15</span></div>
                     <div class='progress-container'></div>
                 </div>
             </div>
         </details>
-        <p style='text-align: center; margin-top: 30px; font-size: 0.85em; color: var(--text-color); opacity: 0.6;'>🕒 更新時間：2025-08-01 12:44:18</p>
+        <p style='text-align: center; margin-top: 30px; font-size: 0.85em; color: var(--text-color); opacity: 0.6;'>🕒 更新時間：2025-08-01 12:54:59</p>
     </div>
 </body>
 </html>
