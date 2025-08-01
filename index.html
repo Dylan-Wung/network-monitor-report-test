@@ -89,27 +89,40 @@
             box-shadow: 0 3px 12px rgba(0,0,0,0.05);
             transition: background-color 0.3s, box-shadow 0.3s;
         }
+        /* --- [NEW v2.9.4] Header Styles --- */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+            margin-bottom: 35px;
+        }
         h2 {
-            text-align: center;
             color: var(--text-color);
-            margin-bottom: 10px;
+            margin-bottom: 0;
+            margin-right: 20px;
             transition: color 0.3s;
             font-size: 2em;
             font-weight: 700;
+            text-align: left;
+        }
+        .header-meta {
+            text-align: right;
+            flex-shrink: 0;
         }
         .update-info, .script-version {
-            text-align: center;
             font-size: 0.9em;
             color: var(--text-color);
-            margin-bottom: 5px;
-            margin-top: 0;
+            margin: 0;
             opacity: 0.7;
         }
         .script-version {
             font-size: 0.8em;
-            margin-bottom: 35px;
             opacity: 0.6;
+            margin-top: 5px;
         }
+        /* --- End of [NEW v2.9.4] --- */
         .ok { color: var(--ok-color); }
         .warn { color: var(--warn-color); }
         .fail { color: var(--fail-color); }
@@ -120,16 +133,16 @@
             border-radius: 10px;
             margin-bottom: 40px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            text-align: center;
             border: 1px solid var(--border-color-light);
             transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
         .overview-dashboard h3 {
             margin-top: 0;
-            font-size: 1.6em;
+            font-size: 1.3em; /* [MODIFIED v2.9.4] Reduced font size */
             margin-bottom: 20px;
             color: var(--text-color);
             font-weight: 600;
+            text-align: left; /* [MODIFIED v2.9.4] Aligned to left */
         }
         .overview-stats {
             display: flex;
@@ -493,9 +506,13 @@
                 <button id='toggleAllBtn' onclick="toggleAllSections()">全部展開</button>
             </div>
         </div>
-        <h2>🌐 網路設備狀態報告</h2>
-        <p class='update-info'>每5分鐘更新一次</p>
-        <p class='script-version'>版本號：v2.9.3</p>
+        <div class='header-container'>
+            <h2>🌐 網路設備狀態報告</h2>
+            <div class='header-meta'>
+                <p class='update-info'>每5分鐘更新一次</p>
+                <p class='script-version'>版本號：v2.9.4</p>
+            </div>
+        </div>
         <div class='overview-dashboard'>
             <h3>設備狀態總覽</h3>
             <div class='overview-stats'>
@@ -530,8 +547,8 @@
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="mem">
-                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.2% (OK)</span></div>
-                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.2%;'><span>20.2%</span></div></div>
+                    <div class='resource-label-row'><span class='resource-label'>記憶體使用率:</span><span class='resource-value-text ok'>20.7% (OK)</span></div>
+                    <div class='progress-container'><div class='progress-bar ok' style='width: 20.7%;'><span>20.7%</span></div></div>
                     <span class='threshold-info'>(閾值: 警告 > 70%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="disk">
@@ -540,12 +557,12 @@
                     <span class='threshold-info'>(閾值: 警告 > 80%, 錯誤 > 90%)</span>
                 </div>
                 <div class='resource-item detailed' data-resource="load">
-                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.12</span></div>
+                    <div class='resource-label-row'><span class='resource-label'>平均負載 (5分鐘):</span><span class='resource-value-text'>0.02</span></div>
                     <div class='progress-container'></div>
                 </div>
             </div>
         </details>
-        <p style='text-align: center; margin-top: 30px; font-size: 0.85em; color: var(--text-color); opacity: 0.6;'>🕒 更新時間：2025-08-01 13:29:30</p>
+        <p style='text-align: center; margin-top: 30px; font-size: 0.85em; color: var(--text-color); opacity: 0.6;'>🕒 更新時間：2025-08-01 14:04:55</p>
     </div>
 </body>
 </html>
